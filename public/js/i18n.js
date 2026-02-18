@@ -40,7 +40,7 @@ const TRANSLATIONS = {
     qaManageHint: 'Search, edit, and manage records',
 
     scanTitle: 'Scan Patient Card',
-    scanHint: 'Place the RFID card on the reader or enter the UID manually',
+    scanHint: 'Place the RFID card on the reader to scan',
     enterRfidUid: 'Enter RFID UID...',
     scan: 'Scan',
 
@@ -174,7 +174,7 @@ const TRANSLATIONS = {
     qaManageHint: 'البحث والتعديل وإدارة السجلات',
 
     scanTitle: 'مسح بطاقة المريض',
-    scanHint: 'ضع بطاقة RFID على القارئ أو أدخل المعرف يدوياً',
+    scanHint: 'ضع بطاقة RFID على القارئ للمسح',
     enterRfidUid: 'أدخل معرف RFID...',
     scan: 'مسح',
 
@@ -308,7 +308,7 @@ const TRANSLATIONS = {
     qaManageHint: 'Rechercher, modifier et gérer les dossiers',
 
     scanTitle: 'Scanner la carte patient',
-    scanHint: "Placez la carte RFID sur le lecteur ou entrez l'UID manuellement",
+    scanHint: 'Placez la carte RFID sur le lecteur pour scanner',
     enterRfidUid: "Entrez l'UID RFID...",
     scan: 'Scanner',
 

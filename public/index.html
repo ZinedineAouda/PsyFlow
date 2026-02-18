@@ -199,17 +199,11 @@
             </div>
           </div>
           <h2 class="scan-title" data-i18n="scanTitle">Scan Patient Card</h2>
-          <p class="scan-hint" data-i18n="scanHint">Place the RFID card on the reader or enter the UID manually</p>
-          <div class="rfid-input-group">
-            <div class="input-wrapper input-with-icon">
-              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              <input type="text" id="read-rfid-input" class="rfid-input" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." autofocus data-i18n-aria="enterRfidUid" aria-label="RFID card UID">
-            </div>
-            <button class="btn btn-primary btn-lg" id="scan-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <span data-i18n="scan">Scan</span>
-            </button>
-          </div>
+          <p class="scan-hint" data-i18n="scanHint">Place the RFID card on the reader to scan</p>
+          <input type="text" id="read-rfid-input" class="rfid-input-hidden" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." autofocus data-i18n-aria="enterRfidUid" aria-label="RFID card UID">
+          <button class="btn btn-primary btn-lg hidden" id="scan-btn">
+            <span data-i18n="scan">Scan</span>
+          </button>
         </div>
         <div id="read-result" class="result-container hidden"></div>
       </section>

@@ -578,6 +578,15 @@ textarea {
   font-size: var(--font-md);
 }
 
+.rfid-input-hidden {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
 
 input:focus, select:focus, textarea:focus {
