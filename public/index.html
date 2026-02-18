@@ -213,13 +213,8 @@
         <div class="scan-card scan-card-compact">
           <h2 class="scan-title" data-i18n="registerTitle">Register New Patient Card</h2>
           <p class="scan-hint" data-i18n="registerHint">Scan a new RFID card, then complete the patient profile</p>
-          <div class="rfid-input-group">
-            <div class="input-wrapper input-with-icon">
-              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              <input type="text" id="reg-rfid-input" class="rfid-input" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." data-i18n-aria="enterRfidUid" aria-label="RFID card UID for registration">
-            </div>
-            <button class="btn btn-primary" id="check-card-btn" data-i18n="checkCard">Check Card</button>
-          </div>
+          <input type="text" id="reg-rfid-input" class="rfid-input-hidden" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." data-i18n-aria="enterRfidUid" aria-label="RFID card UID for registration">
+          <button class="btn btn-primary hidden" id="check-card-btn" data-i18n="checkCard">Check Card</button>
         </div>
 
         <div id="reg-form-container" class="hidden">
