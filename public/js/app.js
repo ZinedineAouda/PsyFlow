@@ -453,6 +453,13 @@ async function loadPatients() {
         actions.appendChild(reactBtn);
       }
 
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn-ghost btn-sm';
+      deleteBtn.style.color = 'var(--danger)';
+      deleteBtn.textContent = t('delete');
+      deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); confirmDelete(p.id, p.full_name); });
+      actions.appendChild(deleteBtn);
+
       item.appendChild(info);
       item.appendChild(actions);
       list.appendChild(item);
@@ -554,6 +561,23 @@ function confirmReactivate(id, name) {
     try {
       await apiCall(`/api/patients/${id}/reactivate`, 'POST');
       showAlert(t('alertReactivated'), 'success');
+      loadPatients();
+    } catch (err) {
+      showAlert(err.message);
+    }
+  };
+}
+
+function confirmDelete(id, name) {
+  document.getElementById('confirm-title').textContent = t('deleteTitle');
+  document.getElementById('confirm-message').textContent = t('deleteMsg', { name });
+  document.getElementById('confirm-btn').className = 'btn btn-danger';
+  document.getElementById('confirm-btn').textContent = t('delete');
+  document.getElementById('confirm-modal').classList.add('active');
+  pendingConfirmAction = async () => {
+    try {
+      await apiCall(`/api/patients/${id}/permanent`, 'DELETE');
+      showAlert(t('alertDeleted'), 'success');
       loadPatients();
     } catch (err) {
       showAlert(err.message);

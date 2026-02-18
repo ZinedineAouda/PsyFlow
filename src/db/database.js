@@ -60,6 +60,14 @@ async function deactivatePatient(id) {
   return result.rows[0];
 }
 
+async function deletePatient(id) {
+  const result = await pool.query(
+    'DELETE FROM patients WHERE id = $1 RETURNING *',
+    [id]
+  );
+  return result.rows[0];
+}
+
 async function reactivatePatient(id) {
   const result = await pool.query(
     'UPDATE patients SET is_active = TRUE, updated_at = NOW() WHERE id = $1 RETURNING *',
@@ -121,6 +129,7 @@ module.exports = {
   createPatient,
   updatePatient,
   deactivatePatient,
+  deletePatient,
   reactivatePatient,
   getAllPatients,
   searchPatients,

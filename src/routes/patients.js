@@ -87,6 +87,20 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id/permanent', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await db.deletePatient(id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    res.json({ success: true, message: 'Patient permanently deleted' });
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: 'Failed to delete patient' });
+  }
+});
+
 router.post('/:id/reactivate', async (req, res) => {
   try {
     const { id } = req.params;

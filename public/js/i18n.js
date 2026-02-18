@@ -96,6 +96,10 @@ const TRANSLATIONS = {
     deactivateMsg: 'Are you sure you want to deactivate the card for "{name}"? The patient data will be preserved but the card will no longer work for scanning.',
     reactivateTitle: 'Reactivate Patient Card',
     reactivateMsg: 'Are you sure you want to reactivate the card for "{name}"? The patient will become active again.',
+    deleteTitle: 'Permanently Delete Patient',
+    deleteMsg: 'Are you sure you want to permanently delete "{name}"? This action cannot be undone and all patient data will be lost.',
+    delete: 'Delete',
+    alertDeleted: 'Patient permanently deleted',
 
     alertEnterUid: 'Please scan or enter an RFID UID',
     alertCardRegistered: 'This card is already registered to: ',
@@ -230,6 +234,10 @@ const TRANSLATIONS = {
     deactivateMsg: 'هل أنت متأكد من تعطيل البطاقة لـ "{name}"؟ سيتم الاحتفاظ ببيانات المريض لكن البطاقة لن تعمل للمسح.',
     reactivateTitle: 'إعادة تفعيل بطاقة المريض',
     reactivateMsg: 'هل أنت متأكد من إعادة تفعيل البطاقة لـ "{name}"؟ سيصبح المريض نشطاً مرة أخرى.',
+    deleteTitle: 'حذف المريض نهائياً',
+    deleteMsg: 'هل أنت متأكد من حذف "{name}" نهائياً؟ لا يمكن التراجع عن هذا الإجراء وستفقد جميع بيانات المريض.',
+    delete: 'حذف',
+    alertDeleted: 'تم حذف المريض نهائياً',
 
     alertEnterUid: 'يرجى مسح أو إدخال معرف RFID',
     alertCardRegistered: 'هذه البطاقة مسجلة بالفعل لـ: ',
@@ -364,6 +372,10 @@ const TRANSLATIONS = {
     deactivateMsg: 'Êtes-vous sûr de vouloir désactiver la carte de "{name}" ? Les données seront conservées mais la carte ne fonctionnera plus.',
     reactivateTitle: 'Réactiver la carte patient',
     reactivateMsg: 'Êtes-vous sûr de vouloir réactiver la carte de "{name}" ? Le patient redeviendra actif.',
+    deleteTitle: 'Supprimer définitivement le patient',
+    deleteMsg: 'Êtes-vous sûr de vouloir supprimer définitivement "{name}" ? Cette action est irréversible et toutes les données seront perdues.',
+    delete: 'Supprimer',
+    alertDeleted: 'Patient supprimé définitivement',
 
     alertEnterUid: 'Veuillez scanner ou entrer un UID RFID',
     alertCardRegistered: 'Cette carte est déjà enregistrée pour : ',
