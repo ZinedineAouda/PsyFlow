@@ -45,8 +45,8 @@ function toggleTheme() {
 /* --- RFID SCAN STATE MACHINE --- */
 const ScanState = { IDLE: 'idle', SCANNING: 'scanning', FOUND: 'found', NOT_FOUND: 'notfound', ERROR: 'error' };
 
-function setScanState(state) {
-  const el = document.getElementById('scan-illustration');
+function setScanState(state, target = 'scan-illustration') {
+  const el = document.getElementById(target);
   if (!el) return;
   el.className = 'scan-illustration';
   el.classList.add('scan-state-' + state);
@@ -116,6 +116,7 @@ function switchMode(mode) {
   } else if (mode === 'register') {
     document.getElementById('reg-rfid-input').focus();
     document.getElementById('reg-form-container').classList.add('hidden');
+    setScanState(ScanState.IDLE, 'reg-scan-illustration');
   } else if (mode === 'manage') {
     loadPatients();
   }
@@ -366,23 +367,28 @@ async function checkCardForRegistration() {
   clearAlerts();
   const uid = document.getElementById('reg-rfid-input').value.trim();
   if (!uid) { showAlert(t('alertEnterUid')); return; }
+  setScanState(ScanState.SCANNING, 'reg-scan-illustration');
   try {
     const data = await apiCall('/api/patients/scan', 'POST', { rfid_uid: uid });
     if (data.found) {
+      setScanState(ScanState.NOT_FOUND, 'reg-scan-illustration');
       showAlert(t('alertCardRegistered') + data.patient.full_name, 'warning');
       document.getElementById('reg-form-container').classList.add('hidden');
       return;
     }
     if (data.deactivated) {
+      setScanState(ScanState.NOT_FOUND, 'reg-scan-illustration');
       showAlert(t('alertCardDeactivated'), 'warning');
       document.getElementById('reg-form-container').classList.add('hidden');
       return;
     }
+    setScanState(ScanState.FOUND, 'reg-scan-illustration');
     showAlert(t('alertCardAvailable'), 'success');
     document.getElementById('reg-rfid-uid').value = uid.toUpperCase();
     document.getElementById('reg-form-container').classList.remove('hidden');
     document.getElementById('reg-name').focus();
   } catch (err) {
+    setScanState(ScanState.ERROR, 'reg-scan-illustration');
     showAlert(err.message);
   }
 }
