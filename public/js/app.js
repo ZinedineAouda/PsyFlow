@@ -586,8 +586,10 @@ function confirmDelete(id, name) {
 }
 
 function confirmAction() {
-  closeConfirmModal();
-  if (pendingConfirmAction) { pendingConfirmAction(); pendingConfirmAction = null; }
+  const action = pendingConfirmAction;
+  pendingConfirmAction = null;
+  document.getElementById('confirm-modal').classList.remove('active');
+  if (action) action();
 }
 
 function closeConfirmModal() {
