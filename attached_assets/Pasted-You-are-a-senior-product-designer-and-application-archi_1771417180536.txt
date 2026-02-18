@@ -1,0 +1,88 @@
+You are a senior product designer and application architect working on a professional medical desktop application for psychologists.
+
+Context:
+- The app already includes RFID reading, patient registration, theming, animations, and a reusable component system.
+- Your task is to extend the UX and application logic in a clean, professional, and intuitive way.
+
+Your mission has TWO CORE OBJECTIVES.
+
+────────────────────────────
+1) ADD A GENERAL DASHBOARD
+────────────────────────────
+Create a central dashboard that serves as the entry point of the application.
+
+Dashboard Requirements:
+- Display high-level information at a glance:
+  - Total registered patients
+  - Number of active RFID cards
+  - Last scanned card
+  - System status (RFID reader connected/disconnected)
+- Use cards and visual hierarchy
+- No sensitive medical details exposed
+- Calm, professional, medical-grade UI
+- Subtle animations when data updates
+- Dashboard loads on app startup
+
+UX Rules:
+- One clear primary action (Read Card)
+- Secondary actions (Register Card, Manage Patients)
+- Dashboard must follow the existing design system and themes
+
+Deliver:
+- Dashboard layout
+- Component usage
+- Data flow explanation
+- Example UI code
+
+────────────────────────────
+2) SMART RFID FLOW FOR UNREGISTERED CARDS
+────────────────────────────
+Implement an intelligent, user-friendly flow when reading RFID cards.
+
+Behavior:
+- When an RFID card is scanned:
+  - If the card is REGISTERED:
+    → Load the patient profile normally
+  - If the card is NOT REGISTERED:
+    → Immediately prompt the user with a modal dialog
+
+Modal Requirements:
+- Clear message:
+  “This RFID card is not registered. Do you want to register a new patient?”
+- Two actions:
+  - Primary: Register New Patient
+  - Secondary: Cancel
+- Modal must be:
+  - Theme-aware
+  - Accessible
+  - Animated subtly
+- If confirmed:
+  → Automatically open the registration form
+  → Pre-fill RFID UID
+- If canceled:
+  → Return to dashboard safely
+
+UX Rules:
+- No dead ends
+- No confusion
+- No technical error messages shown to the user
+- Flow must feel natural and professional
+
+Deliver:
+- User flow diagram
+- State logic explanation
+- Modal component usage
+- Code example for condition handling
+
+────────────────────────────
+GLOBAL CONSTRAINTS
+────────────────────────────
+- Respect existing UX/UI system
+- Use reusable components only
+- Maintain medical-grade professionalism
+- Avoid unnecessary steps
+- Optimize for daily clinical workflow
+
+Think like a senior product owner and UX architect.
+Explain decisions clearly.
+Ensure the experience feels intuitive and calm.

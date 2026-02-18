@@ -25,7 +25,13 @@
 
     <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
       <div class="nav-section-label">Main</div>
-      <button class="nav-item active" data-mode="reading" aria-current="page" tabindex="0">
+      <button class="nav-item active" data-mode="dashboard" aria-current="page" tabindex="0">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-item" data-mode="reading" tabindex="0">
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         </span>
@@ -62,16 +68,115 @@
   <main class="main-panel">
     <div class="main-header">
       <div>
-        <h1 class="page-title" id="page-title">Read Card</h1>
-        <p class="page-subtitle" id="page-subtitle">Scan a patient's RFID card to view their profile</p>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+        <p class="page-subtitle" id="page-subtitle">Overview of your clinic's patient records</p>
       </div>
     </div>
 
     <div id="alert-container" class="alert-container"></div>
 
     <div class="page-content">
+      <!-- DASHBOARD MODE -->
+      <section id="mode-dashboard" class="mode-section mode-active">
+        <div class="dashboard-grid">
+          <div class="stat-card" id="stat-total">
+            <div class="stat-icon stat-icon-primary">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-total-value">--</div>
+              <div class="stat-label">Total Patients</div>
+            </div>
+          </div>
+          <div class="stat-card" id="stat-active">
+            <div class="stat-icon stat-icon-success">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-active-value">--</div>
+              <div class="stat-label">Active Cards</div>
+            </div>
+          </div>
+          <div class="stat-card" id="stat-inactive">
+            <div class="stat-icon stat-icon-warning">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-inactive-value">--</div>
+              <div class="stat-label">Inactive Cards</div>
+            </div>
+          </div>
+          <div class="stat-card" id="stat-reader">
+            <div class="stat-icon stat-icon-info">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value stat-value-sm" id="stat-reader-value">Ready</div>
+              <div class="stat-label">System Status</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-row">
+          <div class="card dashboard-last-scan">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Last Activity
+              </h3>
+            </div>
+            <div class="last-scan-body" id="last-scan-info">
+              <div class="empty-state empty-state-sm">
+                <p>No patients registered yet</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card dashboard-quick-actions">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Quick Actions
+              </h3>
+            </div>
+            <div class="quick-actions-body">
+              <button class="quick-action-btn quick-action-primary" id="qa-read-card">
+                <div class="quick-action-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div class="quick-action-text">
+                  <span class="quick-action-label">Read Card</span>
+                  <span class="quick-action-hint">Scan a patient's RFID card</span>
+                </div>
+                <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button class="quick-action-btn" id="qa-register">
+                <div class="quick-action-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                </div>
+                <div class="quick-action-text">
+                  <span class="quick-action-label">Register New Patient</span>
+                  <span class="quick-action-hint">Link a new card to a patient</span>
+                </div>
+                <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button class="quick-action-btn" id="qa-manage">
+                <div class="quick-action-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="quick-action-text">
+                  <span class="quick-action-label">Manage Patients</span>
+                  <span class="quick-action-hint">Search, edit, and manage records</span>
+                </div>
+                <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- READING MODE -->
-      <section id="mode-reading" class="mode-section mode-active">
+      <section id="mode-reading" class="mode-section">
         <div class="scan-card">
           <div class="scan-illustration" id="scan-illustration">
             <div class="scan-rings">
@@ -266,6 +371,37 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- UNREGISTERED CARD MODAL -->
+<div class="modal-overlay" id="unregistered-modal" role="dialog" aria-modal="true" aria-labelledby="unregistered-modal-title">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 class="modal-title" id="unregistered-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Unregistered Card
+      </h3>
+      <button class="modal-close" id="unregistered-modal-close" aria-label="Close dialog">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="unregistered-prompt">
+        <div class="unregistered-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1"/></svg>
+        </div>
+        <p class="unregistered-text">This RFID card is not registered. Would you like to register a new patient with this card?</p>
+        <p class="unregistered-uid" id="unregistered-uid-display"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="unregistered-cancel-btn">Cancel</button>
+      <button class="btn btn-primary" id="unregistered-register-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Register New Patient
+      </button>
+    </div>
   </div>
 </div>
 

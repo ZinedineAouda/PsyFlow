@@ -101,6 +101,16 @@ router.post('/:id/reactivate', async (req, res) => {
   }
 });
 
+router.get('/stats/dashboard', async (req, res) => {
+  try {
+    const stats = await db.getDashboardStats();
+    res.json(stats);
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: 'Failed to load dashboard stats' });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { search, include_inactive } = req.query;

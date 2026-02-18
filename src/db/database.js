@@ -86,6 +86,25 @@ async function searchPatients(term) {
   return result.rows;
 }
 
+async function getDashboardStats() {
+  const result = await pool.query(`
+    SELECT
+      COUNT(*) AS total_patients,
+      COUNT(*) FILTER (WHERE is_active = TRUE) AS active_cards,
+      COUNT(*) FILTER (WHERE is_active = FALSE) AS inactive_cards
+    FROM patients
+  `);
+  const lastScanned = await pool.query(
+    'SELECT rfid_uid, full_name, updated_at FROM patients ORDER BY updated_at DESC LIMIT 1'
+  );
+  return {
+    total_patients: parseInt(result.rows[0].total_patients),
+    active_cards: parseInt(result.rows[0].active_cards),
+    inactive_cards: parseInt(result.rows[0].inactive_cards),
+    last_scanned: lastScanned.rows[0] || null,
+  };
+}
+
 async function checkRfidExists(rfidUid) {
   const result = await pool.query(
     'SELECT id, is_active FROM patients WHERE rfid_uid = $1',
@@ -106,4 +125,5 @@ module.exports = {
   getAllPatients,
   searchPatients,
   checkRfidExists,
+  getDashboardStats,
 };

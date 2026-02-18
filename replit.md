@@ -34,7 +34,9 @@ public/
 - **Accessibility**: Focus-visible outlines, keyboard navigation, ARIA roles, screen reader labels
 
 ## Key Features
+- **Dashboard**: Central entry point with stat cards (total patients, active/inactive cards, system status), last activity display, quick action buttons
 - **Reading Mode**: Scan RFID card with animated feedback, view patient profile
+- **Smart RFID Flow**: Unregistered cards trigger a modal prompt offering one-click registration instead of a dead-end
 - **Registration Mode**: Register new cards with patient data + custom fields
 - **Management Mode**: Search, edit, deactivate/reactivate patients
 - **Theme Toggle**: Light/dark mode switch in sidebar footer
@@ -46,6 +48,7 @@ public/
 - `patients` table with rfid_uid (unique), full_name, age, gender, diagnosis, notes, custom_fields (JSONB), is_active flag
 
 ## API Endpoints
+- GET /api/patients/stats/dashboard - Dashboard statistics
 - POST /api/patients/scan - Scan card UID
 - POST /api/patients/register - Register new patient
 - PUT /api/patients/:id - Update patient
@@ -58,5 +61,6 @@ public/
 - `node server.js` starts on port 5000
 
 ## Recent Changes
+- 2026-02-18: Added Dashboard as central entry point with stat cards, last activity, and quick actions; implemented smart RFID flow with unregistered card modal prompt
 - 2026-02-18: Major UX/UI redesign — sidebar layout, design token system, light/dark themes, RFID state-driven animations, skeleton loaders, accessibility improvements, component library
 - 2026-02-18: Initial build - full CRUD, RFID scanning, registration, management modes
