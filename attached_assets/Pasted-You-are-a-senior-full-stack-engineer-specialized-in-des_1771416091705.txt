@@ -1,0 +1,82 @@
+You are a senior full-stack engineer specialized in desktop medical software and hardware integration.
+
+Goal:
+Build a secure desktop application for psychologists to manage psychological patient records using RFID cards.
+
+Core Concept:
+Each patient owns an RFID card.
+The card UID is used as a unique identifier linked to a psychological patient profile.
+
+Application Type:
+Desktop application (offline-first, privacy-focused).
+
+Main Features:
+
+1. RFID Integration
+- Read RFID card UID from a USB RFID reader
+- Support serial/COM input (assume standard USB reader)
+- Detect card insertion automatically
+- Prevent duplicate UID registration
+
+2. Two Main Application Modes
+
+A) Registration & Management Mode
+- Register a new RFID card
+- Create a new patient profile
+- Editable custom fields:
+  - Full name
+  - Age
+  - Gender
+  - Diagnosis
+  - Notes (long text)
+  - Any future custom fields (dynamic schema)
+- Edit existing patient data
+- Delete or deactivate a card
+
+B) Reading Mode
+- Scan an existing RFID card
+- Instantly fetch linked patient profile
+- Display all stored data clearly
+- Read-only mode by default (editable only with permission)
+
+3. Data Storage
+- Local encrypted SQLite database
+- RFID UID as primary key
+- Designed for medical data privacy
+- Easy to extend schema later
+
+4. UI/UX Requirements
+- Simple, clean interface for clinic use
+- Large buttons
+- Clear separation between:
+  - Registration
+  - Reading
+- Error handling:
+  - Unknown card
+  - Duplicate card
+  - Reader disconnected
+
+5. Architecture & Stack (you decide best)
+- Choose a suitable desktop framework (Electron, Tauri, or Python)
+- Modular code structure
+- Clear separation between:
+  - UI
+  - RFID logic
+  - Database logic
+
+6. Security & Ethics
+- No cloud by default
+- Local-only data
+- Prepare for future role-based access (admin / reader)
+
+Deliverables:
+- Project structure
+- Technology choice explanation
+- Core source code
+- RFID reading example
+- Database schema
+- Instructions to run locally in Replit or export
+
+Think step-by-step.
+Explain decisions clearly.
+Assume the user is technical but still learning.
