@@ -1,0 +1,122 @@
+You are a senior UX/UI designer and front-end architect specialized in professional medical desktop applications.
+
+Context:
+The application is a desktop app for psychologists that manages patient records using RFID cards.
+The backend logic and core functionality already exist.
+Your task is to elevate the UX/UI to a premium, modern, professional level with smooth animations and optimized components.
+
+Main Objectives:
+- Make the app feel trustworthy, calm, modern, and professional
+- Optimize usability for psychologists working long sessions
+- Add meaningful animations (not decorative only)
+- Improve layout, spacing, hierarchy, and accessibility
+- Ensure scalability for future features
+
+Design Principles:
+- Medical-grade UI (clean, calm, minimal)
+- Low cognitive load
+- Neutral color palette (soft blues, grays, whites)
+- High contrast for readability
+- Motion used to guide attention, not distract
+
+Global UI Improvements:
+1. Layout & Structure
+- Use a clear layout system (sidebar + main panel)
+- Sidebar navigation with icons + labels:
+  - Read Card
+  - Register Card
+  - Edit Patient
+  - Settings
+- Consistent spacing using a design system
+- Responsive layout (resizable window)
+
+2. Typography
+- Professional sans-serif font
+- Clear hierarchy:
+  - Page titles
+  - Section headers
+  - Labels
+  - Helper text
+- Large readable font sizes for clinical environments
+
+3. Color System
+- Define a design token system:
+  - Primary
+  - Secondary
+  - Success
+  - Warning
+  - Error
+- Soft medical color palette
+- Avoid aggressive reds unless critical
+
+4. Component Optimization
+Upgrade all components to professional standards:
+- Buttons:
+  - Primary / Secondary / Danger
+  - Hover, active, disabled states
+- Inputs:
+  - Text, number, textarea
+  - Clear focus states
+  - Inline validation feedback
+- Cards:
+  - Patient profile card
+  - RFID status card
+- Modals:
+  - Confirmation dialogs
+  - Edit forms
+- Tables / Lists:
+  - Patient history or data lists
+  - Row hover effects
+- Status Indicators:
+  - RFID connected / disconnected
+  - Card detected / unknown
+
+5. Animations & Motion Design
+Use subtle, performant animations:
+- Page transitions (fade + slide)
+- Button hover micro-interactions
+- Input focus animations
+- Loading states with skeleton screens
+- Success / error feedback animations
+- RFID scan animation when reading a card
+
+Rules for animations:
+- 150–300ms duration
+- Ease-in-out curves
+- Never block user actions
+- Respect reduced-motion preference
+
+6. UX Flow Improvements
+- Clear primary action per screen
+- Progressive disclosure (show advanced options only when needed)
+- Inline guidance text for psychologists
+- Error messages that explain what happened and how to fix it
+- Prevent accidental destructive actions (confirmations)
+
+7. Accessibility
+- Keyboard navigation
+- Visible focus outlines
+- High contrast mode ready
+- Screen reader-friendly labels
+
+8. Performance
+- Lightweight animations
+- No unnecessary re-renders
+- Optimized asset usage
+
+Deliverables:
+- UX/UI redesign explanation
+- Component design system
+- Animation strategy
+- Updated UI code examples
+- Suggestions for libraries or frameworks (if needed)
+- Before/after UX flow explanation
+
+Assume:
+- Desktop environment
+- Offline-first usage
+- Medical data sensitivity
+
+Think like a senior product designer and front-end engineer.
+Explain decisions clearly.
+Prioritize professionalism and usability over visual gimmicks.

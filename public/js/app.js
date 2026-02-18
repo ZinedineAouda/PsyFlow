@@ -1,19 +1,114 @@
+/* ======================================================
+   RFID Patient Manager — Application Logic
+   Theme system, RFID state machine, CRUD, accessibility
+   ====================================================== */
+
 let currentMode = 'reading';
 let pendingConfirmAction = null;
 let searchTimeout = null;
 let patientCache = {};
 
+const PAGE_CONFIG = {
+  reading:  { title: 'Read Card',        subtitle: "Scan a patient's RFID card to view their profile" },
+  register: { title: 'Register Card',    subtitle: 'Link a new RFID card to a patient profile' },
+  manage:   { title: 'Manage Patients',  subtitle: 'Search, edit, and manage all patient records' },
+};
+
+/* --- THEME SYSTEM --- */
+function initTheme() {
+  const saved = localStorage.getItem('rfid-theme');
+  const theme = saved || 'light';
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('rfid-theme', theme);
+  const icon = document.getElementById('theme-icon');
+  const label = document.querySelector('.theme-label');
+  if (theme === 'dark') {
+    icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    label.textContent = 'Light Mode';
+  } else {
+    icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    label.textContent = 'Dark Mode';
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+/* --- RFID SCAN STATE MACHINE --- */
+const ScanState = { IDLE: 'idle', SCANNING: 'scanning', FOUND: 'found', NOT_FOUND: 'notfound', ERROR: 'error' };
+
+function setScanState(state) {
+  const el = document.getElementById('scan-illustration');
+  if (!el) return;
+  el.className = 'scan-illustration';
+  el.classList.add('scan-state-' + state);
+
+  const statusDot = document.querySelector('#rfid-status .status-dot');
+  const statusText = document.querySelector('#rfid-status .status-text');
+
+  switch (state) {
+    case ScanState.SCANNING:
+      statusDot.className = 'status-dot status-dot-scanning';
+      statusText.textContent = 'Scanning...';
+      break;
+    case ScanState.FOUND:
+      statusDot.className = 'status-dot status-dot-ready';
+      statusText.textContent = 'Card Detected';
+      setTimeout(() => {
+        statusText.textContent = 'Reader Ready';
+      }, 3000);
+      break;
+    case ScanState.NOT_FOUND:
+    case ScanState.ERROR:
+      statusDot.className = 'status-dot status-dot-error';
+      statusText.textContent = state === ScanState.ERROR ? 'Scan Error' : 'Unknown Card';
+      setTimeout(() => {
+        statusDot.className = 'status-dot status-dot-ready';
+        statusText.textContent = 'Reader Ready';
+      }, 3000);
+      break;
+    default:
+      statusDot.className = 'status-dot status-dot-ready';
+      statusText.textContent = 'Reader Ready';
+  }
+}
+
+/* --- NAVIGATION --- */
 function switchMode(mode) {
   currentMode = mode;
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
-  document.getElementById('mode-reading').classList.toggle('hidden', mode !== 'reading');
-  document.getElementById('mode-register').classList.toggle('hidden', mode !== 'register');
-  document.getElementById('mode-manage').classList.toggle('hidden', mode !== 'manage');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    n.removeAttribute('aria-current');
+  });
+  const activeNav = document.querySelector(`.nav-item[data-mode="${mode}"]`);
+  if (activeNav) {
+    activeNav.classList.add('active');
+    activeNav.setAttribute('aria-current', 'page');
+  }
+
+  document.querySelectorAll('.mode-section').forEach(s => s.classList.remove('mode-active'));
+  const section = document.getElementById('mode-' + mode);
+  if (section) section.classList.add('mode-active');
+
+  const config = PAGE_CONFIG[mode];
+  if (config) {
+    document.getElementById('page-title').textContent = config.title;
+    document.getElementById('page-subtitle').textContent = config.subtitle;
+  }
+
   clearAlerts();
+
   if (mode === 'reading') {
     document.getElementById('read-rfid-input').focus();
     document.getElementById('read-result').classList.add('hidden');
+    setScanState(ScanState.IDLE);
   } else if (mode === 'register') {
     document.getElementById('reg-rfid-input').focus();
     document.getElementById('reg-form-container').classList.add('hidden');
@@ -22,17 +117,31 @@ function switchMode(mode) {
   }
 }
 
+/* --- ALERTS --- */
 function showAlert(msg, type = 'error') {
   const container = document.getElementById('alert-container');
-  const icons = { error: '\u26A0\uFE0F', success: '\u2705', warning: '\u26A0\uFE0F', info: '\u2139\uFE0F' };
+  const iconSvgs = {
+    error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    warning: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  };
   const div = document.createElement('div');
   div.className = `alert alert-${type}`;
-  const span = document.createElement('span');
-  span.textContent = icons[type] || '';
-  div.appendChild(span);
-  div.appendChild(document.createTextNode(' ' + msg));
+  div.setAttribute('role', 'alert');
+
+  const iconSpan = document.createElement('span');
+  iconSpan.className = 'alert-icon';
+  iconSpan.innerHTML = iconSvgs[type] || iconSvgs.info;
+  div.appendChild(iconSpan);
+
+  const textSpan = document.createElement('span');
+  textSpan.textContent = msg;
+  div.appendChild(textSpan);
+
   container.innerHTML = '';
   container.appendChild(div);
+
   if (type === 'success') {
     setTimeout(() => { if (div.parentNode) div.remove(); }, 4000);
   }
@@ -42,6 +151,7 @@ function clearAlerts() {
   document.getElementById('alert-container').innerHTML = '';
 }
 
+/* --- API --- */
 async function apiCall(url, method = 'GET', body = null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body) opts.body = JSON.stringify(body);
@@ -51,45 +161,54 @@ async function apiCall(url, method = 'GET', body = null) {
   return data;
 }
 
+/* --- READ CARD --- */
 async function scanCard() {
   clearAlerts();
   const uid = document.getElementById('read-rfid-input').value.trim();
   if (!uid) { showAlert('Please scan or enter an RFID UID'); return; }
+
+  setScanState(ScanState.SCANNING);
+
   try {
     const data = await apiCall('/api/patients/scan', 'POST', { rfid_uid: uid });
     const container = document.getElementById('read-result');
     container.classList.remove('hidden');
+
     if (data.found) {
-      container.innerHTML = renderPatientView(data.patient);
-      bindPatientViewEvents(container, data.patient);
+      setScanState(ScanState.FOUND);
+      container.innerHTML = renderPatientProfile(data.patient);
+      bindPatientViewEvents(container);
     } else if (data.deactivated) {
-      container.innerHTML = '';
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = '<div class="empty-state"><div class="icon">\u26A0\uFE0F</div><h3>Card Deactivated</h3><p>This card was previously deactivated.</p></div>';
-      container.appendChild(card);
+      setScanState(ScanState.NOT_FOUND);
+      container.innerHTML = renderEmptyState(
+        '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        'Card Deactivated',
+        'This card was previously deactivated. You can reactivate it from the Manage tab.'
+      );
     } else {
+      setScanState(ScanState.NOT_FOUND);
       container.innerHTML = '';
-      const card = document.createElement('div');
-      card.className = 'card';
-      const inner = document.createElement('div');
-      inner.className = 'empty-state';
-      inner.innerHTML = '<div class="icon">\uD83D\uDCCB</div><h3>Card Not Registered</h3><p>This RFID card is not linked to any patient. Switch to Registration mode to register it.</p>';
-      const actions = document.createElement('div');
-      actions.className = 'actions-bar';
-      actions.style.cssText = 'justify-content:center;margin-top:16px;';
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderEmptyState(
+        '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+        'Card Not Registered',
+        'This RFID card is not linked to any patient profile.'
+      );
       const btn = document.createElement('button');
       btn.className = 'btn btn-primary';
-      btn.textContent = 'Register This Card';
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Register This Card';
       btn.addEventListener('click', () => registerFromScan(uid));
-      actions.appendChild(btn);
-      inner.appendChild(actions);
-      card.appendChild(inner);
-      container.appendChild(card);
+      wrapper.querySelector('.empty-state').appendChild(btn);
+      container.appendChild(wrapper);
     }
   } catch (err) {
+    setScanState(ScanState.ERROR);
     showAlert(err.message);
   }
+}
+
+function renderEmptyState(iconHtml, title, message) {
+  return `<div class="card" style="padding:0;"><div class="empty-state"><div class="empty-state-icon">${iconHtml}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(message)}</p></div></div>`;
 }
 
 function registerFromScan(uid) {
@@ -98,48 +217,53 @@ function registerFromScan(uid) {
   checkCardForRegistration();
 }
 
-function renderPatientView(p) {
+/* --- PATIENT PROFILE VIEW --- */
+function renderPatientProfile(p) {
   const customFields = typeof p.custom_fields === 'string' ? JSON.parse(p.custom_fields) : (p.custom_fields || {});
   let customHtml = '';
-  for (const [key, val] of Object.entries(customFields)) {
-    if (key && val) {
-      customHtml += `<div class="field-label">${escapeHtml(key)}</div><div class="field-value">${escapeHtml(val)}</div>`;
-    }
+  const entries = Object.entries(customFields).filter(([k, v]) => k && v);
+  if (entries.length) {
+    customHtml = `<div class="custom-fields-display"><h4>Additional Fields</h4><div class="profile-grid">${entries.map(([k, v]) => `<div class="profile-field"><div class="field-label">${escapeHtml(k)}</div><div class="field-value">${escapeHtml(v)}</div></div>`).join('')}</div></div>`;
   }
+
   return `
-    <div class="card patient-display">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div>
-          <span class="rfid-badge">${escapeHtml(p.rfid_uid)}</span>
+    <div class="patient-profile">
+      <div class="profile-header">
+        <div class="profile-header-left">
+          <span class="rfid-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            ${escapeHtml(p.rfid_uid)}
+          </span>
           <span class="status-badge ${p.is_active ? 'status-active' : 'status-inactive'}">${p.is_active ? 'Active' : 'Inactive'}</span>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-outline btn-sm" data-action="edit" data-id="${p.id}">Edit</button>
+        <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+      </div>
+      <div class="profile-body">
+        <div class="profile-grid">
+          <div class="profile-field"><div class="field-label">Full Name</div><div class="field-value">${escapeHtml(p.full_name)}</div></div>
+          <div class="profile-field"><div class="field-label">Age</div><div class="field-value">${p.age || 'N/A'}</div></div>
+          <div class="profile-field"><div class="field-label">Gender</div><div class="field-value">${escapeHtml(p.gender || 'N/A')}</div></div>
+          <div class="profile-field"><div class="field-label">Diagnosis</div><div class="field-value">${escapeHtml(p.diagnosis || 'N/A')}</div></div>
+          <div class="profile-field" style="grid-column:1/-1;"><div class="field-label">Notes</div><div class="field-value field-value-notes">${escapeHtml(p.notes || 'No notes')}</div></div>
         </div>
+        ${customHtml}
       </div>
-      <div class="form-row">
-        <div><div class="field-label">Full Name</div><div class="field-value">${escapeHtml(p.full_name)}</div></div>
-        <div><div class="field-label">Age</div><div class="field-value">${p.age || 'N/A'}</div></div>
-      </div>
-      <div class="form-row">
-        <div><div class="field-label">Gender</div><div class="field-value">${p.gender || 'N/A'}</div></div>
-        <div><div class="field-label">Diagnosis</div><div class="field-value">${escapeHtml(p.diagnosis || 'N/A')}</div></div>
-      </div>
-      <div class="field-label">Notes</div>
-      <div class="field-value" style="white-space:pre-wrap;">${escapeHtml(p.notes || 'No notes')}</div>
-      ${customHtml ? `<div class="custom-fields-section"><h4 style="margin-bottom:12px;">Additional Fields</h4>${customHtml}</div>` : ''}
-      <div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);">
-        Registered: ${new Date(p.created_at).toLocaleDateString()} | Last updated: ${new Date(p.updated_at).toLocaleDateString()}
+      <div class="profile-footer">
+        <span class="profile-meta">Registered: ${new Date(p.created_at).toLocaleDateString()} &middot; Updated: ${new Date(p.updated_at).toLocaleDateString()}</span>
       </div>
     </div>`;
 }
 
-function bindPatientViewEvents(container, patient) {
+function bindPatientViewEvents(container) {
   container.querySelectorAll('[data-action="edit"]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.id)));
   });
 }
 
+/* --- REGISTRATION --- */
 async function checkCardForRegistration() {
   clearAlerts();
   const uid = document.getElementById('reg-rfid-input').value.trim();
@@ -152,7 +276,7 @@ async function checkCardForRegistration() {
       return;
     }
     if (data.deactivated) {
-      showAlert('This card was previously deactivated. Please use a new card or reactivate it from Manage.', 'warning');
+      showAlert('This card was previously deactivated. Use a new card or reactivate it from Manage.', 'warning');
       document.getElementById('reg-form-container').classList.add('hidden');
       return;
     }
@@ -168,6 +292,14 @@ async function checkCardForRegistration() {
 async function registerPatient(e) {
   e.preventDefault();
   clearAlerts();
+
+  const nameField = document.getElementById('reg-name');
+  if (!nameField.value.trim()) {
+    showAlert('Patient name is required', 'error');
+    nameField.focus();
+    return;
+  }
+
   const customFields = collectCustomFields('reg');
   const body = {
     rfid_uid: document.getElementById('reg-rfid-uid').value,
@@ -197,22 +329,28 @@ function cancelRegistration() {
   clearAlerts();
 }
 
+/* --- MANAGE / PATIENT LIST --- */
 async function loadPatients() {
   const searchTerm = document.getElementById('search-input').value.trim();
   const container = document.getElementById('patient-list-container');
+
+  container.innerHTML = '<div class="skeleton-list"><div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div><div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div><div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div></div>';
+
   try {
     const url = searchTerm
       ? `/api/patients?search=${encodeURIComponent(searchTerm)}&include_inactive=true`
       : '/api/patients?include_inactive=true';
     const data = await apiCall(url);
+
     if (!data.patients.length) {
-      container.innerHTML = '';
-      const empty = document.createElement('div');
-      empty.className = 'empty-state';
-      empty.innerHTML = `<div class="icon">\uD83D\uDCCB</div><h3>No patients found</h3><p>${searchTerm ? 'Try a different search term' : 'Register patients using the Registration tab'}</p>`;
-      container.appendChild(empty);
+      container.innerHTML = renderEmptyState(
+        '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+        'No patients found',
+        searchTerm ? 'Try a different search term' : 'Register patients using the Register Card tab'
+      );
       return;
     }
+
     patientCache = {};
     data.patients.forEach(p => { patientCache[p.id] = p; });
 
@@ -222,23 +360,28 @@ async function loadPatients() {
     data.patients.forEach(p => {
       const item = document.createElement('div');
       item.className = 'patient-list-item';
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('role', 'button');
+      item.setAttribute('aria-label', `View ${p.full_name}`);
       item.addEventListener('click', () => openEditModal(p.id));
+      item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(p.id); } });
 
       const info = document.createElement('div');
+      info.className = 'patient-info';
       const nameEl = document.createElement('div');
-      nameEl.className = 'name';
+      nameEl.className = 'patient-name';
       nameEl.textContent = p.full_name;
       const uidEl = document.createElement('div');
-      uidEl.className = 'uid';
+      uidEl.className = 'patient-uid';
       uidEl.textContent = p.rfid_uid;
       info.appendChild(nameEl);
       info.appendChild(uidEl);
 
       const actions = document.createElement('div');
-      actions.style.cssText = 'display:flex;align-items:center;gap:12px;';
+      actions.className = 'patient-actions';
 
       const meta = document.createElement('span');
-      meta.className = 'meta';
+      meta.className = 'patient-diagnosis';
       meta.textContent = p.diagnosis || 'No diagnosis';
 
       const badge = document.createElement('span');
@@ -252,19 +395,13 @@ async function loadPatients() {
         const deactBtn = document.createElement('button');
         deactBtn.className = 'btn btn-danger btn-sm';
         deactBtn.textContent = 'Deactivate';
-        deactBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          confirmDeactivate(p.id, p.full_name);
-        });
+        deactBtn.addEventListener('click', (e) => { e.stopPropagation(); confirmDeactivate(p.id, p.full_name); });
         actions.appendChild(deactBtn);
       } else {
         const reactBtn = document.createElement('button');
         reactBtn.className = 'btn btn-success btn-sm';
         reactBtn.textContent = 'Reactivate';
-        reactBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          confirmReactivate(p.id, p.full_name);
-        });
+        reactBtn.addEventListener('click', (e) => { e.stopPropagation(); confirmReactivate(p.id, p.full_name); });
         actions.appendChild(reactBtn);
       }
 
@@ -285,6 +422,7 @@ function debounceSearch() {
   searchTimeout = setTimeout(loadPatients, 300);
 }
 
+/* --- EDIT MODAL --- */
 async function openEditModal(id) {
   try {
     const data = await apiCall(`/api/patients/${id}`);
@@ -302,6 +440,7 @@ async function openEditModal(id) {
       addCustomFieldRow('edit', key, val);
     }
     document.getElementById('edit-modal').classList.add('active');
+    document.getElementById('edit-name').focus();
   } catch (err) {
     showAlert(err.message);
   }
@@ -339,9 +478,10 @@ async function saveEdit(e) {
   }
 }
 
+/* --- CONFIRM MODALS --- */
 function confirmDeactivate(id, name) {
   document.getElementById('confirm-title').textContent = 'Deactivate Patient Card';
-  document.getElementById('confirm-message').textContent = `Are you sure you want to deactivate the card for "${name}"? The patient data will be preserved but the card will no longer work.`;
+  document.getElementById('confirm-message').textContent = `Are you sure you want to deactivate the card for "${name}"? The patient data will be preserved but the card will no longer work for scanning.`;
   document.getElementById('confirm-btn').className = 'btn btn-danger';
   document.getElementById('confirm-btn').textContent = 'Deactivate';
   document.getElementById('confirm-modal').classList.add('active');
@@ -383,8 +523,9 @@ function closeConfirmModal() {
   pendingConfirmAction = null;
 }
 
-function addCustomField(prefix, key = '', val = '') {
-  addCustomFieldRow(prefix, key, val);
+/* --- CUSTOM FIELDS --- */
+function addCustomField(prefix) {
+  addCustomFieldRow(prefix, '', '');
 }
 
 function addCustomFieldRow(prefix, key = '', val = '') {
@@ -408,6 +549,7 @@ function addCustomFieldRow(prefix, key = '', val = '') {
   removeBtn.type = 'button';
   removeBtn.className = 'btn btn-danger btn-sm';
   removeBtn.textContent = 'Remove';
+  removeBtn.setAttribute('aria-label', 'Remove custom field');
   removeBtn.addEventListener('click', () => row.remove());
 
   row.appendChild(keyInput);
@@ -428,6 +570,7 @@ function collectCustomFields(prefix) {
   return fields;
 }
 
+/* --- UTILITIES --- */
 function escapeHtml(str) {
   if (!str) return '';
   const div = document.createElement('div');
@@ -435,16 +578,60 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-document.getElementById('read-rfid-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); scanCard(); }
-});
-document.getElementById('reg-rfid-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); checkCardForRegistration(); }
-});
+/* --- EVENT BINDINGS --- */
+function initEventBindings() {
+  document.querySelectorAll('.nav-item[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchMode(btn.dataset.mode); } });
+  });
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeEditModal();
-    closeConfirmModal();
-  }
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  document.getElementById('scan-btn').addEventListener('click', scanCard);
+  document.getElementById('read-rfid-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); scanCard(); }
+  });
+
+  document.getElementById('check-card-btn').addEventListener('click', checkCardForRegistration);
+  document.getElementById('reg-rfid-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); checkCardForRegistration(); }
+  });
+
+  document.getElementById('registration-form').addEventListener('submit', registerPatient);
+  document.getElementById('cancel-reg-btn').addEventListener('click', cancelRegistration);
+  document.getElementById('add-reg-field-btn').addEventListener('click', () => addCustomField('reg'));
+
+  document.getElementById('edit-form').addEventListener('submit', saveEdit);
+  document.getElementById('edit-modal-close').addEventListener('click', closeEditModal);
+  document.getElementById('edit-cancel-btn').addEventListener('click', closeEditModal);
+  document.getElementById('add-edit-field-btn').addEventListener('click', () => addCustomField('edit'));
+
+  document.getElementById('confirm-btn').addEventListener('click', confirmAction);
+  document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
+
+  document.getElementById('search-input').addEventListener('input', debounceSearch);
+  document.getElementById('refresh-btn').addEventListener('click', loadPatients);
+
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+        pendingConfirmAction = null;
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeEditModal();
+      closeConfirmModal();
+    }
+  });
+}
+
+/* --- INIT --- */
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  initEventBindings();
+  setScanState(ScanState.IDLE);
 });

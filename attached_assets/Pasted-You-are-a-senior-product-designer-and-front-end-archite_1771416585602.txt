@@ -1,0 +1,125 @@
+You are a senior product designer and front-end architect working on a professional, medical-grade desktop application for psychologists.
+
+Context:
+- The application already exists and functions correctly.
+- A UX/UI design system has been defined (layout, components, motion, accessibility).
+- Your task is to SYSTEMATICALLY apply, extend, and professionalize this system across the entire app.
+
+Your mission has FOUR mandatory objectives that must be solved together and consistently.
+
+────────────────────────────
+1) APPLY UX SYSTEM CONSISTENTLY
+────────────────────────────
+Audit the entire application and refactor the UI so that:
+
+- All screens follow the same:
+  - Layout grid
+  - Spacing system
+  - Typography scale
+  - Color tokens
+  - Interaction patterns
+- No screen feels “different” or improvised
+- Navigation, headers, footers, and actions behave identically everywhere
+- Primary / secondary actions are consistent across screens
+- Error, loading, and empty states are standardized
+
+Deliver:
+- A UX consistency checklist
+- Refactored UI structure
+- Explanation of changes applied globally
+
+────────────────────────────
+2) ADD THEME SUPPORT (LIGHT / DARK – MEDICAL)
+────────────────────────────
+Implement a professional theme system:
+
+Requirements:
+- Two themes:
+  - Light Medical Theme (default)
+  - Dark Medical Theme (low-eye-strain)
+- Use design tokens / variables for:
+  - Colors
+  - Backgrounds
+  - Text
+  - Borders
+  - Status indicators
+- No hardcoded colors anywhere
+- Theme toggle available in settings
+- Theme persists across sessions
+- Both themes respect medical accessibility standards
+
+Deliver:
+- Theme architecture explanation
+- Token definitions
+- Toggle logic
+- Example components showing theme switching
+
+────────────────────────────
+3) ANIMATE RFID SCAN (STATE-DRIVEN MOTION)
+────────────────────────────
+Create a professional RFID scan animation system driven by application state.
+
+States to visualize:
+- Reader disconnected
+- Reader connected (idle)
+- Scanning in progress
+- Card detected
+- Unknown card
+- Registered card loaded
+- Error state
+
+Animation rules:
+- State-based, not time-based
+- Calm, medical-friendly motion
+- No flashy or aggressive effects
+- Use subtle pulses, progress indicators, and transitions
+- Animation must communicate system status clearly
+
+Deliver:
+- State diagram
+- Animation logic
+- UI components for RFID feedback
+- Example code snippets
+
+────────────────────────────
+4) CREATE A REUSABLE COMPONENT LIBRARY
+────────────────────────────
+Refactor the UI into a reusable, scalable component system.
+
+Required components:
+- Buttons (Primary / Secondary / Danger / Icon)
+- Inputs (Text, Number, Textarea)
+- Cards (Patient, Status, Info)
+- Modals (Confirm, Edit, Warning)
+- Alerts (Success, Error, Info)
+- Loaders & Skeletons
+- RFID Status Indicator
+
+Rules:
+- Components must be:
+  - Theme-aware
+  - Accessible
+  - Animated consistently
+  - Easily extendable
+- No duplicated UI logic
+- Clear naming and folder structure
+
+Deliver:
+- Component folder structure
+- Component API design
+- Usage examples
+- Best practices for future expansion
+
+────────────────────────────
+GLOBAL CONSTRAINTS
+────────────────────────────
+- Desktop-first
+- Offline-first
+- Medical data sensitivity
+- Performance-conscious animations
+- Accessibility (keyboard, focus, contrast)
+- Professional, calm, trustworthy aesthetic
+
+Think and work like a senior engineer + designer.
+Explain architectural decisions clearly.
+Prioritize maintainability, scalability, and clinical usability.

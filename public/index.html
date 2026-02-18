@@ -4,156 +4,286 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RFID Patient Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<header class="header">
-  <h1><span class="icon">&#x1F4CB;</span> RFID Patient Manager</h1>
-  <div class="mode-tabs">
-    <button class="mode-tab active" data-mode="reading" onclick="switchMode('reading')">Reading Mode</button>
-    <button class="mode-tab" data-mode="register" onclick="switchMode('register')">Registration</button>
-    <button class="mode-tab" data-mode="manage" onclick="switchMode('manage')">Manage</button>
-  </div>
-</header>
-
-<main class="main-content">
-  <div id="alert-container"></div>
-
-  <!-- READING MODE -->
-  <section id="mode-reading">
-    <div class="rfid-scan-section">
-      <h2>Scan Patient Card</h2>
-      <p>Place the RFID card on the reader, or type the card UID manually</p>
-      <div class="rfid-input-group">
-        <input type="text" id="read-rfid-input" class="rfid-input" placeholder="RFID UID..." autofocus>
-        <button class="btn btn-primary btn-lg" onclick="scanCard()">Scan</button>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">PatientRFID</span>
+        <span class="brand-sub">Clinical Manager</span>
       </div>
     </div>
-    <div id="read-result" class="hidden"></div>
-  </section>
 
-  <!-- REGISTRATION MODE -->
-  <section id="mode-register" class="hidden">
-    <div class="rfid-scan-section">
-      <h2>Register New Patient Card</h2>
-      <p>Scan the new RFID card, then fill in patient details</p>
-      <div class="rfid-input-group">
-        <input type="text" id="reg-rfid-input" class="rfid-input" placeholder="RFID UID...">
-        <button class="btn btn-primary" onclick="checkCardForRegistration()">Check Card</button>
+    <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" data-mode="reading" aria-current="page" tabindex="0">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </span>
+        <span class="nav-label">Read Card</span>
+      </button>
+      <button class="nav-item" data-mode="register" tabindex="0">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </span>
+        <span class="nav-label">Register Card</span>
+      </button>
+      <button class="nav-item" data-mode="manage" tabindex="0">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span class="nav-label">Manage Patients</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="rfid-status" id="rfid-status">
+        <span class="status-dot status-dot-ready"></span>
+        <span class="status-text">Reader Ready</span>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+        <span class="theme-toggle-icon" id="theme-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </span>
+        <span class="theme-label">Dark Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-panel">
+    <div class="main-header">
+      <div>
+        <h1 class="page-title" id="page-title">Read Card</h1>
+        <p class="page-subtitle" id="page-subtitle">Scan a patient's RFID card to view their profile</p>
       </div>
     </div>
-    <div id="reg-form-container" class="hidden">
-      <div class="card">
-        <h3 class="section-title">Patient Information</h3>
-        <form id="registration-form" onsubmit="registerPatient(event)">
-          <input type="hidden" id="reg-rfid-uid">
-          <div class="form-group">
-            <label for="reg-name">Full Name *</label>
-            <input type="text" id="reg-name" required placeholder="Enter patient full name">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="reg-age">Age</label>
-              <input type="number" id="reg-age" min="0" max="150" placeholder="Age">
+
+    <div id="alert-container" class="alert-container"></div>
+
+    <div class="page-content">
+      <!-- READING MODE -->
+      <section id="mode-reading" class="mode-section mode-active">
+        <div class="scan-card">
+          <div class="scan-illustration" id="scan-illustration">
+            <div class="scan-rings">
+              <div class="scan-ring ring-1"></div>
+              <div class="scan-ring ring-2"></div>
+              <div class="scan-ring ring-3"></div>
             </div>
-            <div class="form-group">
-              <label for="reg-gender">Gender</label>
-              <select id="reg-gender">
-                <option value="">-- Select --</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+            <div class="scan-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1"/></svg>
             </div>
           </div>
-          <div class="form-group">
-            <label for="reg-diagnosis">Diagnosis</label>
-            <input type="text" id="reg-diagnosis" placeholder="Primary diagnosis">
+          <h2 class="scan-title">Scan Patient Card</h2>
+          <p class="scan-hint">Place the RFID card on the reader or enter the UID manually</p>
+          <div class="rfid-input-group">
+            <div class="input-wrapper input-with-icon">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <input type="text" id="read-rfid-input" class="rfid-input" placeholder="Enter RFID UID..." autofocus aria-label="RFID card UID">
+            </div>
+            <button class="btn btn-primary btn-lg" id="scan-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Scan
+            </button>
           </div>
-          <div class="form-group">
-            <label for="reg-notes">Notes</label>
-            <textarea id="reg-notes" placeholder="Additional notes, observations..."></textarea>
-          </div>
-          <div class="custom-fields-section">
-            <h3 class="section-title">Custom Fields <button type="button" class="btn btn-outline btn-sm" onclick="addCustomField('reg')">+ Add Field</button></h3>
-            <div id="reg-custom-fields"></div>
-          </div>
-          <div class="actions-bar">
-            <button type="button" class="btn btn-outline" onclick="cancelRegistration()">Cancel</button>
-            <button type="submit" class="btn btn-success btn-lg">Register Patient</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </section>
+        </div>
+        <div id="read-result" class="result-container hidden"></div>
+      </section>
 
-  <!-- MANAGE MODE -->
-  <section id="mode-manage" class="hidden">
-    <div class="card">
-      <h3 class="section-title">All Patients</h3>
-      <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Search by name, RFID, or diagnosis..." oninput="debounceSearch()">
-        <button class="btn btn-primary" onclick="loadPatients()">Refresh</button>
-      </div>
-      <div id="patient-list-container"></div>
+      <!-- REGISTRATION MODE -->
+      <section id="mode-register" class="mode-section">
+        <div class="scan-card scan-card-compact">
+          <h2 class="scan-title">Register New Patient Card</h2>
+          <p class="scan-hint">Scan a new RFID card, then complete the patient profile</p>
+          <div class="rfid-input-group">
+            <div class="input-wrapper input-with-icon">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <input type="text" id="reg-rfid-input" class="rfid-input" placeholder="Enter RFID UID..." aria-label="RFID card UID for registration">
+            </div>
+            <button class="btn btn-primary" id="check-card-btn">Check Card</button>
+          </div>
+        </div>
+
+        <div id="reg-form-container" class="hidden">
+          <div class="card card-form slide-up">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                Patient Information
+              </h3>
+            </div>
+            <form id="registration-form">
+              <input type="hidden" id="reg-rfid-uid">
+              <div class="form-group">
+                <label for="reg-name">Full Name <span class="required">*</span></label>
+                <input type="text" id="reg-name" required placeholder="Enter patient full name" aria-required="true">
+                <span class="form-hint">Required for identification</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="reg-age">Age</label>
+                  <input type="number" id="reg-age" min="0" max="150" placeholder="Age">
+                </div>
+                <div class="form-group">
+                  <label for="reg-gender">Gender</label>
+                  <select id="reg-gender">
+                    <option value="">-- Select --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="reg-diagnosis">Diagnosis</label>
+                <input type="text" id="reg-diagnosis" placeholder="Primary diagnosis">
+              </div>
+              <div class="form-group">
+                <label for="reg-notes">Notes</label>
+                <textarea id="reg-notes" placeholder="Clinical observations, session notes..."></textarea>
+              </div>
+              <div class="custom-fields-section">
+                <div class="custom-fields-header">
+                  <h4>Custom Fields</h4>
+                  <button type="button" class="btn btn-ghost btn-sm" id="add-reg-field-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Field
+                  </button>
+                </div>
+                <div id="reg-custom-fields"></div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="cancel-reg-btn">Cancel</button>
+                <button type="submit" class="btn btn-success btn-lg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Register Patient
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- MANAGE MODE -->
+      <section id="mode-manage" class="mode-section">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              All Patients
+            </h3>
+          </div>
+          <div class="search-bar">
+            <div class="input-wrapper input-with-icon search-input-wrap">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search by name, RFID, or diagnosis..." aria-label="Search patients">
+            </div>
+            <button class="btn btn-ghost" id="refresh-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Refresh
+            </button>
+          </div>
+          <div id="patient-list-container">
+            <div class="skeleton-list">
+              <div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div>
+              <div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div>
+              <div class="skeleton-row"><div class="skeleton-line skeleton-w60"></div><div class="skeleton-line skeleton-w30"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
-</main>
+  </main>
+</div>
 
 <!-- EDIT MODAL -->
-<div class="modal-overlay" id="edit-modal">
-  <div class="modal">
-    <h3 class="section-title">Edit Patient</h3>
-    <form id="edit-form" onsubmit="saveEdit(event)">
-      <input type="hidden" id="edit-id">
-      <div class="form-group">
-        <label for="edit-name">Full Name *</label>
-        <input type="text" id="edit-name" required>
-      </div>
-      <div class="form-row">
+<div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title" id="edit-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Patient
+      </h3>
+      <button class="modal-close" id="edit-modal-close" aria-label="Close dialog">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="edit-form">
+      <div class="modal-body">
+        <input type="hidden" id="edit-id">
         <div class="form-group">
-          <label for="edit-age">Age</label>
-          <input type="number" id="edit-age" min="0" max="150">
+          <label for="edit-name">Full Name <span class="required">*</span></label>
+          <input type="text" id="edit-name" required aria-required="true">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-age">Age</label>
+            <input type="number" id="edit-age" min="0" max="150">
+          </div>
+          <div class="form-group">
+            <label for="edit-gender">Gender</label>
+            <select id="edit-gender">
+              <option value="">-- Select --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
-          <label for="edit-gender">Gender</label>
-          <select id="edit-gender">
-            <option value="">-- Select --</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
+          <label for="edit-diagnosis">Diagnosis</label>
+          <input type="text" id="edit-diagnosis">
+        </div>
+        <div class="form-group">
+          <label for="edit-notes">Notes</label>
+          <textarea id="edit-notes"></textarea>
+        </div>
+        <div class="custom-fields-section">
+          <div class="custom-fields-header">
+            <h4>Custom Fields</h4>
+            <button type="button" class="btn btn-ghost btn-sm" id="add-edit-field-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Field
+            </button>
+          </div>
+          <div id="edit-custom-fields"></div>
         </div>
       </div>
-      <div class="form-group">
-        <label for="edit-diagnosis">Diagnosis</label>
-        <input type="text" id="edit-diagnosis">
-      </div>
-      <div class="form-group">
-        <label for="edit-notes">Notes</label>
-        <textarea id="edit-notes"></textarea>
-      </div>
-      <div class="custom-fields-section">
-        <h3 class="section-title">Custom Fields <button type="button" class="btn btn-outline btn-sm" onclick="addCustomField('edit')">+ Add Field</button></h3>
-        <div id="edit-custom-fields"></div>
-      </div>
-      <div class="actions-bar">
-        <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
-        <button type="submit" class="btn btn-success">Save Changes</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="edit-cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- CONFIRM MODAL -->
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal">
-    <h3 id="confirm-title">Confirm Action</h3>
-    <p id="confirm-message" style="margin: 16px 0; color: var(--text-muted);"></p>
-    <div class="actions-bar">
-      <button class="btn btn-outline" onclick="closeConfirmModal()">Cancel</button>
-      <button class="btn btn-danger" id="confirm-btn" onclick="confirmAction()">Confirm</button>
+<div class="modal-overlay" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 class="modal-title" id="confirm-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="confirm-title">Confirm Action</span>
+      </h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" class="confirm-text"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="confirm-cancel-btn">Cancel</button>
+      <button class="btn btn-danger" id="confirm-btn">Confirm</button>
     </div>
   </div>
 </div>
