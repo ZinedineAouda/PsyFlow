@@ -36,9 +36,7 @@ public/
 
 ## Key Features
 - **Dashboard**: Central entry point with stat cards (total patients, active/inactive cards, system status), last activity display, quick action buttons
-- **Reading Mode**: Scan RFID card with animated feedback, view patient profile
-- **Smart RFID Flow**: Unregistered cards trigger a modal prompt offering one-click registration instead of a dead-end
-- **Registration Mode**: Register new cards with patient data + custom fields
+- **Read Card (Unified Flow)**: Scan RFID card — if registered, shows patient profile; if unregistered, shows inline registration form to create a new patient
 - **Management Mode**: Search, edit, deactivate/reactivate patients
 - **Multi-language**: English, Arabic (RTL), French — language selector in sidebar, persisted in localStorage
 - **Theme Toggle**: Light/dark mode switch in sidebar footer
@@ -63,7 +61,8 @@ public/
 - `node server.js` starts on port 5000
 
 ## Recent Changes
+- 2026-02-18: Merged Read Card and Register Card into unified flow — scan a card to view or register
 - 2026-02-18: Added multi-language support (English, Arabic with RTL, French) with language selector in sidebar and full UI translation
-- 2026-02-18: Added Dashboard as central entry point with stat cards, last activity, and quick actions; implemented smart RFID flow with unregistered card modal prompt
+- 2026-02-18: Added Dashboard as central entry point with stat cards, last activity, and quick actions
 - 2026-02-18: Major UX/UI redesign — sidebar layout, design token system, light/dark themes, RFID state-driven animations, skeleton loaders, accessibility improvements, component library
 - 2026-02-18: Initial build - full CRUD, RFID scanning, registration, management modes
