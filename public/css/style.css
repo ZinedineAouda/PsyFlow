@@ -418,24 +418,31 @@ body {
 
 .mode-section.mode-active { display: block; }
 
+#mode-reading.mode-active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* --- SCAN CARD AREA --- */
 .scan-card {
   background: var(--bg-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-2xl) var(--space-xl);
+  padding: var(--space-lg) var(--space-xl);
   text-align: center;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-default);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .scan-card-compact { padding: var(--space-xl); }
 
 .scan-illustration {
   position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto var(--space-lg);
+  width: 120px;
+  height: 120px;
+  margin: 0 auto var(--space-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1097,7 +1104,10 @@ textarea {
 
 .empty-state .btn { margin-top: var(--space-lg); }
 
-.result-container {}
+.result-container {
+  flex: 1;
+  overflow-y: auto;
+}
 
 /* --- DASHBOARD --- */
 .dashboard-grid {
