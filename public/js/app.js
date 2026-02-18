@@ -7,12 +7,10 @@ let currentMode = 'dashboard';
 let pendingConfirmAction = null;
 let searchTimeout = null;
 let patientCache = {};
-let pendingUnregisteredUid = null;
 
 const PAGE_CONFIG = {
   dashboard: { title: 'Dashboard',       subtitle: "Overview of your clinic's patient records" },
   reading:   { title: 'Read Card',        subtitle: "Scan a patient's RFID card to view their profile" },
-  register:  { title: 'Register Card',    subtitle: 'Link a new RFID card to a patient profile' },
   manage:    { title: 'Manage Patients',  subtitle: 'Search, edit, and manage all patient records' },
 };
 
@@ -112,11 +110,8 @@ function switchMode(mode) {
   } else if (mode === 'reading') {
     document.getElementById('read-rfid-input').focus();
     document.getElementById('read-result').classList.add('hidden');
-    setScanState(ScanState.IDLE);
-  } else if (mode === 'register') {
-    document.getElementById('reg-rfid-input').focus();
     document.getElementById('reg-form-container').classList.add('hidden');
-    setScanState(ScanState.IDLE, 'reg-scan-illustration');
+    setScanState(ScanState.IDLE);
   } else if (mode === 'manage') {
     loadPatients();
   }
@@ -258,10 +253,12 @@ async function scanCard() {
 
     if (data.found) {
       setScanState(ScanState.FOUND);
+      document.getElementById('reg-form-container').classList.add('hidden');
       container.innerHTML = renderPatientProfile(data.patient);
       bindPatientViewEvents(container);
     } else if (data.deactivated) {
       setScanState(ScanState.NOT_FOUND);
+      document.getElementById('reg-form-container').classList.add('hidden');
       container.innerHTML = renderEmptyState(
         '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
         t('cardDeactivatedTitle'),
@@ -269,8 +266,8 @@ async function scanCard() {
       );
     } else {
       setScanState(ScanState.NOT_FOUND);
-      container.innerHTML = '';
-      showUnregisteredModal(uid);
+      container.classList.add('hidden');
+      showRegistrationForm(uid);
     }
   } catch (err) {
     setScanState(ScanState.ERROR);
@@ -278,42 +275,16 @@ async function scanCard() {
   }
 }
 
-/* --- UNREGISTERED CARD MODAL --- */
-function showUnregisteredModal(uid) {
-  pendingUnregisteredUid = uid;
-  document.getElementById('unregistered-uid-display').textContent = uid.toUpperCase();
-  document.getElementById('unregistered-modal').classList.add('active');
-  document.getElementById('unregistered-register-btn').focus();
-}
-
-function closeUnregisteredModal() {
-  document.getElementById('unregistered-modal').classList.remove('active');
-  pendingUnregisteredUid = null;
-}
-
-function handleUnregisteredRegister() {
-  const uid = pendingUnregisteredUid;
-  closeUnregisteredModal();
-  if (uid) {
-    switchMode('register');
-    document.getElementById('reg-rfid-input').value = uid;
-    checkCardForRegistration();
-  }
-}
-
-function handleUnregisteredCancel() {
-  closeUnregisteredModal();
-  switchMode('dashboard');
+/* --- INLINE REGISTRATION FROM SCAN --- */
+function showRegistrationForm(uid) {
+  showAlert(t('alertCardAvailable'), 'success');
+  document.getElementById('reg-rfid-uid').value = uid.toUpperCase();
+  document.getElementById('reg-form-container').classList.remove('hidden');
+  document.getElementById('reg-name').focus();
 }
 
 function renderEmptyState(iconHtml, title, message) {
   return `<div class="card" style="padding:0;"><div class="empty-state"><div class="empty-state-icon">${iconHtml}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(message)}</p></div></div>`;
-}
-
-function registerFromScan(uid) {
-  switchMode('register');
-  document.getElementById('reg-rfid-input').value = uid;
-  checkCardForRegistration();
 }
 
 /* --- PATIENT PROFILE VIEW --- */
@@ -363,36 +334,6 @@ function bindPatientViewEvents(container) {
 }
 
 /* --- REGISTRATION --- */
-async function checkCardForRegistration() {
-  clearAlerts();
-  const uid = document.getElementById('reg-rfid-input').value.trim();
-  if (!uid) { showAlert(t('alertEnterUid')); return; }
-  setScanState(ScanState.SCANNING, 'reg-scan-illustration');
-  try {
-    const data = await apiCall('/api/patients/scan', 'POST', { rfid_uid: uid });
-    if (data.found) {
-      setScanState(ScanState.NOT_FOUND, 'reg-scan-illustration');
-      showAlert(t('alertCardRegistered') + data.patient.full_name, 'warning');
-      document.getElementById('reg-form-container').classList.add('hidden');
-      return;
-    }
-    if (data.deactivated) {
-      setScanState(ScanState.NOT_FOUND, 'reg-scan-illustration');
-      showAlert(t('alertCardDeactivated'), 'warning');
-      document.getElementById('reg-form-container').classList.add('hidden');
-      return;
-    }
-    setScanState(ScanState.FOUND, 'reg-scan-illustration');
-    showAlert(t('alertCardAvailable'), 'success');
-    document.getElementById('reg-rfid-uid').value = uid.toUpperCase();
-    document.getElementById('reg-form-container').classList.remove('hidden');
-    document.getElementById('reg-name').focus();
-  } catch (err) {
-    setScanState(ScanState.ERROR, 'reg-scan-illustration');
-    showAlert(err.message);
-  }
-}
-
 async function registerPatient(e) {
   e.preventDefault();
   clearAlerts();
@@ -418,9 +359,10 @@ async function registerPatient(e) {
     await apiCall('/api/patients/register', 'POST', body);
     showAlert(t('alertRegistered'), 'success');
     document.getElementById('registration-form').reset();
-    document.getElementById('reg-rfid-input').value = '';
+    document.getElementById('read-rfid-input').value = '';
     document.getElementById('reg-form-container').classList.add('hidden');
     document.getElementById('reg-custom-fields').innerHTML = '';
+    setScanState(ScanState.IDLE);
   } catch (err) {
     showAlert(err.message);
   }
@@ -430,6 +372,8 @@ function cancelRegistration() {
   document.getElementById('reg-form-container').classList.add('hidden');
   document.getElementById('registration-form').reset();
   document.getElementById('reg-custom-fields').innerHTML = '';
+  document.getElementById('read-rfid-input').value = '';
+  setScanState(ScanState.IDLE);
   clearAlerts();
 }
 
@@ -700,11 +644,6 @@ function initEventBindings() {
     if (e.key === 'Enter') { e.preventDefault(); scanCard(); }
   });
 
-  document.getElementById('check-card-btn').addEventListener('click', checkCardForRegistration);
-  document.getElementById('reg-rfid-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); checkCardForRegistration(); }
-  });
-
   document.getElementById('registration-form').addEventListener('submit', registerPatient);
   document.getElementById('cancel-reg-btn').addEventListener('click', cancelRegistration);
   document.getElementById('add-reg-field-btn').addEventListener('click', () => addCustomField('reg'));
@@ -717,15 +656,10 @@ function initEventBindings() {
   document.getElementById('confirm-btn').addEventListener('click', confirmAction);
   document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
 
-  document.getElementById('unregistered-register-btn').addEventListener('click', handleUnregisteredRegister);
-  document.getElementById('unregistered-cancel-btn').addEventListener('click', handleUnregisteredCancel);
-  document.getElementById('unregistered-modal-close').addEventListener('click', handleUnregisteredCancel);
-
   document.getElementById('search-input').addEventListener('input', debounceSearch);
   document.getElementById('refresh-btn').addEventListener('click', loadPatients);
 
   document.getElementById('qa-read-card').addEventListener('click', () => switchMode('reading'));
-  document.getElementById('qa-register').addEventListener('click', () => switchMode('register'));
   document.getElementById('qa-manage').addEventListener('click', () => switchMode('manage'));
 
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -733,7 +667,6 @@ function initEventBindings() {
       if (e.target === overlay) {
         overlay.classList.remove('active');
         pendingConfirmAction = null;
-        pendingUnregisteredUid = null;
       }
     });
   });
@@ -742,7 +675,6 @@ function initEventBindings() {
     if (e.key === 'Escape') {
       closeEditModal();
       closeConfirmModal();
-      closeUnregisteredModal();
     }
   });
 }

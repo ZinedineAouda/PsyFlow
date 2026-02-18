@@ -455,7 +455,6 @@ function applyTranslations() {
 function updatePageConfig() {
   PAGE_CONFIG.dashboard = { title: t('dashboardTitle'), subtitle: t('dashboardSubtitle') };
   PAGE_CONFIG.reading   = { title: t('readCardTitle'),  subtitle: t('readCardSubtitle') };
-  PAGE_CONFIG.register  = { title: t('registerCardTitle'), subtitle: t('registerCardSubtitle') };
   PAGE_CONFIG.manage    = { title: t('managePatientsTitle'), subtitle: t('managePatientsSubtitle') };
 
   const config = PAGE_CONFIG[currentMode];
