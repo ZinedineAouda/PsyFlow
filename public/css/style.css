@@ -404,6 +404,7 @@ body {
   flex: 1;
   padding: var(--space-xl);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .alert-container {
@@ -583,15 +584,14 @@ textarea {
   letter-spacing: 2px;
   text-transform: uppercase;
   font-size: var(--font-md);
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto var(--space-md);
+  text-align: center;
 }
 
 .rfid-input-hidden {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+  display: none;
 }
 
 input:hover, select:hover, textarea:hover { border-color: var(--border-strong); }
