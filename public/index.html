@@ -18,49 +18,59 @@
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       </div>
       <div class="brand-text">
-        <span class="brand-name">PatientRFID</span>
-        <span class="brand-sub">Clinical Manager</span>
+        <span class="brand-name" data-i18n="brandName">PatientRFID</span>
+        <span class="brand-sub" data-i18n="brandSub">Clinical Manager</span>
       </div>
     </div>
 
     <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
-      <div class="nav-section-label">Main</div>
+      <div class="nav-section-label" data-i18n="navMain">Main</div>
       <button class="nav-item active" data-mode="dashboard" aria-current="page" tabindex="0">
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         </span>
-        <span class="nav-label">Dashboard</span>
+        <span class="nav-label" data-i18n="navDashboard">Dashboard</span>
       </button>
       <button class="nav-item" data-mode="reading" tabindex="0">
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         </span>
-        <span class="nav-label">Read Card</span>
+        <span class="nav-label" data-i18n="navReadCard">Read Card</span>
       </button>
       <button class="nav-item" data-mode="register" tabindex="0">
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
         </span>
-        <span class="nav-label">Register Card</span>
+        <span class="nav-label" data-i18n="navRegisterCard">Register Card</span>
       </button>
       <button class="nav-item" data-mode="manage" tabindex="0">
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
-        <span class="nav-label">Manage Patients</span>
+        <span class="nav-label" data-i18n="navManagePatients">Manage Patients</span>
       </button>
     </nav>
 
     <div class="sidebar-footer">
+      <div class="lang-switcher">
+        <span class="lang-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        <select id="lang-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="ar">العربية</option>
+          <option value="fr">Français</option>
+        </select>
+      </div>
       <div class="rfid-status" id="rfid-status">
         <span class="status-dot status-dot-ready"></span>
-        <span class="status-text">Reader Ready</span>
+        <span class="status-text" data-i18n="readerReady">Reader Ready</span>
       </div>
       <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
         <span class="theme-toggle-icon" id="theme-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </span>
-        <span class="theme-label">Dark Mode</span>
+        <span class="theme-label" data-i18n="darkMode">Dark Mode</span>
       </button>
     </div>
   </aside>
@@ -68,8 +78,8 @@
   <main class="main-panel">
     <div class="main-header">
       <div>
-        <h1 class="page-title" id="page-title">Dashboard</h1>
-        <p class="page-subtitle" id="page-subtitle">Overview of your clinic's patient records</p>
+        <h1 class="page-title" id="page-title" data-i18n="dashboardTitle">Dashboard</h1>
+        <p class="page-subtitle" id="page-subtitle" data-i18n="dashboardSubtitle">Overview of your clinic's patient records</p>
       </div>
     </div>
 
@@ -85,7 +95,7 @@
             </div>
             <div class="stat-content">
               <div class="stat-value" id="stat-total-value">--</div>
-              <div class="stat-label">Total Patients</div>
+              <div class="stat-label" data-i18n="statTotalPatients">Total Patients</div>
             </div>
           </div>
           <div class="stat-card" id="stat-active">
@@ -94,7 +104,7 @@
             </div>
             <div class="stat-content">
               <div class="stat-value" id="stat-active-value">--</div>
-              <div class="stat-label">Active Cards</div>
+              <div class="stat-label" data-i18n="statActiveCards">Active Cards</div>
             </div>
           </div>
           <div class="stat-card" id="stat-inactive">
@@ -103,7 +113,7 @@
             </div>
             <div class="stat-content">
               <div class="stat-value" id="stat-inactive-value">--</div>
-              <div class="stat-label">Inactive Cards</div>
+              <div class="stat-label" data-i18n="statInactiveCards">Inactive Cards</div>
             </div>
           </div>
           <div class="stat-card" id="stat-reader">
@@ -111,8 +121,8 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <div class="stat-content">
-              <div class="stat-value stat-value-sm" id="stat-reader-value">Ready</div>
-              <div class="stat-label">System Status</div>
+              <div class="stat-value stat-value-sm" id="stat-reader-value" data-i18n="statReady">Ready</div>
+              <div class="stat-label" data-i18n="statSystemStatus">System Status</div>
             </div>
           </div>
         </div>
@@ -122,12 +132,12 @@
             <div class="card-header">
               <h3 class="card-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Last Activity
+                <span data-i18n="lastActivity">Last Activity</span>
               </h3>
             </div>
             <div class="last-scan-body" id="last-scan-info">
               <div class="empty-state empty-state-sm">
-                <p>No patients registered yet</p>
+                <p data-i18n="noPatients">No patients registered yet</p>
               </div>
             </div>
           </div>
@@ -136,7 +146,7 @@
             <div class="card-header">
               <h3 class="card-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                Quick Actions
+                <span data-i18n="quickActions">Quick Actions</span>
               </h3>
             </div>
             <div class="quick-actions-body">
@@ -145,8 +155,8 @@
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                 </div>
                 <div class="quick-action-text">
-                  <span class="quick-action-label">Read Card</span>
-                  <span class="quick-action-hint">Scan a patient's RFID card</span>
+                  <span class="quick-action-label" data-i18n="qaReadCard">Read Card</span>
+                  <span class="quick-action-hint" data-i18n="qaReadCardHint">Scan a patient's RFID card</span>
                 </div>
                 <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -155,8 +165,8 @@
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                 </div>
                 <div class="quick-action-text">
-                  <span class="quick-action-label">Register New Patient</span>
-                  <span class="quick-action-hint">Link a new card to a patient</span>
+                  <span class="quick-action-label" data-i18n="qaRegister">Register New Patient</span>
+                  <span class="quick-action-hint" data-i18n="qaRegisterHint">Link a new card to a patient</span>
                 </div>
                 <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -165,8 +175,8 @@
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div class="quick-action-text">
-                  <span class="quick-action-label">Manage Patients</span>
-                  <span class="quick-action-hint">Search, edit, and manage records</span>
+                  <span class="quick-action-label" data-i18n="qaManage">Manage Patients</span>
+                  <span class="quick-action-hint" data-i18n="qaManageHint">Search, edit, and manage records</span>
                 </div>
                 <svg class="quick-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -188,16 +198,16 @@
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1"/></svg>
             </div>
           </div>
-          <h2 class="scan-title">Scan Patient Card</h2>
-          <p class="scan-hint">Place the RFID card on the reader or enter the UID manually</p>
+          <h2 class="scan-title" data-i18n="scanTitle">Scan Patient Card</h2>
+          <p class="scan-hint" data-i18n="scanHint">Place the RFID card on the reader or enter the UID manually</p>
           <div class="rfid-input-group">
             <div class="input-wrapper input-with-icon">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              <input type="text" id="read-rfid-input" class="rfid-input" placeholder="Enter RFID UID..." autofocus aria-label="RFID card UID">
+              <input type="text" id="read-rfid-input" class="rfid-input" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." autofocus data-i18n-aria="enterRfidUid" aria-label="RFID card UID">
             </div>
             <button class="btn btn-primary btn-lg" id="scan-btn">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Scan
+              <span data-i18n="scan">Scan</span>
             </button>
           </div>
         </div>
@@ -207,14 +217,14 @@
       <!-- REGISTRATION MODE -->
       <section id="mode-register" class="mode-section">
         <div class="scan-card scan-card-compact">
-          <h2 class="scan-title">Register New Patient Card</h2>
-          <p class="scan-hint">Scan a new RFID card, then complete the patient profile</p>
+          <h2 class="scan-title" data-i18n="registerTitle">Register New Patient Card</h2>
+          <p class="scan-hint" data-i18n="registerHint">Scan a new RFID card, then complete the patient profile</p>
           <div class="rfid-input-group">
             <div class="input-wrapper input-with-icon">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              <input type="text" id="reg-rfid-input" class="rfid-input" placeholder="Enter RFID UID..." aria-label="RFID card UID for registration">
+              <input type="text" id="reg-rfid-input" class="rfid-input" data-i18n-placeholder="enterRfidUid" placeholder="Enter RFID UID..." data-i18n-aria="enterRfidUid" aria-label="RFID card UID for registration">
             </div>
-            <button class="btn btn-primary" id="check-card-btn">Check Card</button>
+            <button class="btn btn-primary" id="check-card-btn" data-i18n="checkCard">Check Card</button>
           </div>
         </div>
 
@@ -223,54 +233,54 @@
             <div class="card-header">
               <h3 class="card-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                Patient Information
+                <span data-i18n="patientInfo">Patient Information</span>
               </h3>
             </div>
             <form id="registration-form">
               <input type="hidden" id="reg-rfid-uid">
               <div class="form-group">
-                <label for="reg-name">Full Name <span class="required">*</span></label>
-                <input type="text" id="reg-name" required placeholder="Enter patient full name" aria-required="true">
-                <span class="form-hint">Required for identification</span>
+                <label for="reg-name"><span data-i18n="fullName">Full Name</span> <span class="required">*</span></label>
+                <input type="text" id="reg-name" required data-i18n-placeholder="enterFullName" placeholder="Enter patient full name" aria-required="true">
+                <span class="form-hint" data-i18n="requiredForId">Required for identification</span>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="reg-age">Age</label>
-                  <input type="number" id="reg-age" min="0" max="150" placeholder="Age">
+                  <label for="reg-age" data-i18n="age">Age</label>
+                  <input type="number" id="reg-age" min="0" max="150" data-i18n-placeholder="age" placeholder="Age">
                 </div>
                 <div class="form-group">
-                  <label for="reg-gender">Gender</label>
+                  <label for="reg-gender" data-i18n="gender">Gender</label>
                   <select id="reg-gender">
-                    <option value="">-- Select --</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="" data-i18n="selectGender">-- Select --</option>
+                    <option value="Male" data-i18n="male">Male</option>
+                    <option value="Female" data-i18n="female">Female</option>
+                    <option value="Other" data-i18n="other">Other</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="reg-diagnosis">Diagnosis</label>
-                <input type="text" id="reg-diagnosis" placeholder="Primary diagnosis">
+                <label for="reg-diagnosis" data-i18n="diagnosis">Diagnosis</label>
+                <input type="text" id="reg-diagnosis" data-i18n-placeholder="primaryDiagnosis" placeholder="Primary diagnosis">
               </div>
               <div class="form-group">
-                <label for="reg-notes">Notes</label>
-                <textarea id="reg-notes" placeholder="Clinical observations, session notes..."></textarea>
+                <label for="reg-notes" data-i18n="notes">Notes</label>
+                <textarea id="reg-notes" data-i18n-placeholder="notesPlaceholder" placeholder="Clinical observations, session notes..."></textarea>
               </div>
               <div class="custom-fields-section">
                 <div class="custom-fields-header">
-                  <h4>Custom Fields</h4>
+                  <h4 data-i18n="customFields">Custom Fields</h4>
                   <button type="button" class="btn btn-ghost btn-sm" id="add-reg-field-btn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Add Field
+                    <span data-i18n="addField">Add Field</span>
                   </button>
                 </div>
                 <div id="reg-custom-fields"></div>
               </div>
               <div class="form-actions">
-                <button type="button" class="btn btn-ghost" id="cancel-reg-btn">Cancel</button>
+                <button type="button" class="btn btn-ghost" id="cancel-reg-btn" data-i18n="cancel">Cancel</button>
                 <button type="submit" class="btn btn-success btn-lg">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                  Register Patient
+                  <span data-i18n="registerPatient">Register Patient</span>
                 </button>
               </div>
             </form>
@@ -284,17 +294,17 @@
           <div class="card-header">
             <h3 class="card-title">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              All Patients
+              <span data-i18n="allPatients">All Patients</span>
             </h3>
           </div>
           <div class="search-bar">
             <div class="input-wrapper input-with-icon search-input-wrap">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="search-input" placeholder="Search by name, RFID, or diagnosis..." aria-label="Search patients">
+              <input type="text" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search by name, RFID, or diagnosis..." data-i18n-aria="searchPlaceholder" aria-label="Search patients">
             </div>
             <button class="btn btn-ghost" id="refresh-btn">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              Refresh
+              <span data-i18n="refresh">Refresh</span>
             </button>
           </div>
           <div id="patient-list-container">
@@ -316,7 +326,7 @@
     <div class="modal-header">
       <h3 class="modal-title" id="edit-modal-title">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit Patient
+        <span data-i18n="editPatient">Edit Patient</span>
       </h3>
       <button class="modal-close" id="edit-modal-close" aria-label="Close dialog">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -326,48 +336,48 @@
       <div class="modal-body">
         <input type="hidden" id="edit-id">
         <div class="form-group">
-          <label for="edit-name">Full Name <span class="required">*</span></label>
+          <label for="edit-name"><span data-i18n="fullName">Full Name</span> <span class="required">*</span></label>
           <input type="text" id="edit-name" required aria-required="true">
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="edit-age">Age</label>
+            <label for="edit-age" data-i18n="age">Age</label>
             <input type="number" id="edit-age" min="0" max="150">
           </div>
           <div class="form-group">
-            <label for="edit-gender">Gender</label>
+            <label for="edit-gender" data-i18n="gender">Gender</label>
             <select id="edit-gender">
-              <option value="">-- Select --</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="" data-i18n="selectGender">-- Select --</option>
+              <option value="Male" data-i18n="male">Male</option>
+              <option value="Female" data-i18n="female">Female</option>
+              <option value="Other" data-i18n="other">Other</option>
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label for="edit-diagnosis">Diagnosis</label>
+          <label for="edit-diagnosis" data-i18n="diagnosis">Diagnosis</label>
           <input type="text" id="edit-diagnosis">
         </div>
         <div class="form-group">
-          <label for="edit-notes">Notes</label>
+          <label for="edit-notes" data-i18n="notes">Notes</label>
           <textarea id="edit-notes"></textarea>
         </div>
         <div class="custom-fields-section">
           <div class="custom-fields-header">
-            <h4>Custom Fields</h4>
+            <h4 data-i18n="customFields">Custom Fields</h4>
             <button type="button" class="btn btn-ghost btn-sm" id="add-edit-field-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Field
+              <span data-i18n="addField">Add Field</span>
             </button>
           </div>
           <div id="edit-custom-fields"></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-ghost" id="edit-cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-ghost" id="edit-cancel-btn" data-i18n="cancel">Cancel</button>
         <button type="submit" class="btn btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Save Changes
+          <span data-i18n="saveChanges">Save Changes</span>
         </button>
       </div>
     </form>
@@ -380,7 +390,7 @@
     <div class="modal-header">
       <h3 class="modal-title" id="unregistered-modal-title">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-        Unregistered Card
+        <span data-i18n="unregisteredCard">Unregistered Card</span>
       </h3>
       <button class="modal-close" id="unregistered-modal-close" aria-label="Close dialog">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -391,15 +401,15 @@
         <div class="unregistered-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1"/></svg>
         </div>
-        <p class="unregistered-text">This RFID card is not registered. Would you like to register a new patient with this card?</p>
+        <p class="unregistered-text" data-i18n="unregisteredText">This RFID card is not registered. Would you like to register a new patient with this card?</p>
         <p class="unregistered-uid" id="unregistered-uid-display"></p>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="unregistered-cancel-btn">Cancel</button>
+      <button class="btn btn-ghost" id="unregistered-cancel-btn" data-i18n="cancel">Cancel</button>
       <button class="btn btn-primary" id="unregistered-register-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Register New Patient
+        <span data-i18n="registerNewPatient">Register New Patient</span>
       </button>
     </div>
   </div>
@@ -411,19 +421,20 @@
     <div class="modal-header">
       <h3 class="modal-title" id="confirm-modal-title">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span id="confirm-title">Confirm Action</span>
+        <span id="confirm-title" data-i18n="confirmAction">Confirm Action</span>
       </h3>
     </div>
     <div class="modal-body">
       <p id="confirm-message" class="confirm-text"></p>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="confirm-cancel-btn">Cancel</button>
-      <button class="btn btn-danger" id="confirm-btn">Confirm</button>
+      <button class="btn btn-ghost" id="confirm-cancel-btn" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-btn" data-i18n="confirm">Confirm</button>
     </div>
   </div>
 </div>
 
+<script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>

@@ -281,6 +281,48 @@ body {
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-xs);
+}
+
+.lang-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-sidebar);
+  flex-shrink: 0;
+}
+
+.lang-switcher select {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  color: var(--text-sidebar);
+  font-size: var(--font-xs);
+  font-family: var(--font-family);
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.lang-switcher select:hover {
+  border-color: rgba(255,255,255,0.3);
+}
+
+.lang-switcher select:focus {
+  border-color: var(--primary);
+}
+
+.lang-switcher select option {
+  background: var(--bg-sidebar);
+  color: var(--text-sidebar-active);
+}
+
 .rfid-status {
   display: flex;
   align-items: center;
@@ -1341,6 +1383,125 @@ textarea {
 
 .slide-up { animation: slideUp var(--transition-slow) ease; }
 
+/* --- RTL SUPPORT (Arabic) --- */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .sidebar {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .main-panel {
+  margin-left: 0;
+  margin-right: var(--sidebar-width);
+}
+
+[dir="rtl"] .nav-item {
+  text-align: right;
+}
+
+[dir="rtl"] .quick-action-btn {
+  text-align: right;
+}
+
+[dir="rtl"] .quick-action-arrow {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .input-with-icon .input-icon {
+  left: auto;
+  right: 14px;
+}
+
+[dir="rtl"] .input-with-icon input,
+[dir="rtl"] .input-with-icon .rfid-input {
+  padding-left: var(--space-md);
+  padding-right: 42px;
+}
+
+[dir="rtl"] .form-actions {
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .patient-list-item {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .profile-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .profile-header-left {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .profile-footer {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .last-scan-detail {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .stat-card {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .rfid-input {
+  text-align: right;
+}
+
+[dir="rtl"] .modal-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .modal-footer {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .card-title {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .alert {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .btn {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .search-bar {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .patient-actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .custom-fields-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .custom-field-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .lang-switcher {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .rfid-status {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .theme-toggle {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
 /* --- RESPONSIVE --- */
 @media (max-width: 1100px) {
   .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1349,10 +1510,11 @@ textarea {
 @media (max-width: 768px) {
   .sidebar { width: 64px; }
   .sidebar .brand-text, .sidebar .nav-label, .sidebar .nav-section-label,
-  .sidebar .status-text, .sidebar .theme-label { display: none; }
+  .sidebar .status-text, .sidebar .theme-label, .sidebar .lang-switcher select { display: none; }
   .sidebar-brand { justify-content: center; padding: var(--space-md); }
   .nav-item { justify-content: center; padding: 12px; }
   .main-panel { margin-left: 64px; }
+  [dir="rtl"] .main-panel { margin-left: 0; margin-right: 64px; }
   .page-content { padding: var(--space-md); }
   .form-row { grid-template-columns: 1fr; }
   .rfid-input-group { flex-direction: column; }

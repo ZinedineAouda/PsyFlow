@@ -30,10 +30,10 @@ function applyTheme(theme) {
   const label = document.querySelector('.theme-label');
   if (theme === 'dark') {
     icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
-    label.textContent = 'Light Mode';
+    label.textContent = t('lightMode');
   } else {
     icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-    label.textContent = 'Dark Mode';
+    label.textContent = t('darkMode');
   }
 }
 
@@ -57,27 +57,27 @@ function setScanState(state) {
   switch (state) {
     case ScanState.SCANNING:
       statusDot.className = 'status-dot status-dot-scanning';
-      statusText.textContent = 'Scanning...';
+      statusText.textContent = t('scanning');
       break;
     case ScanState.FOUND:
       statusDot.className = 'status-dot status-dot-ready';
-      statusText.textContent = 'Card Detected';
+      statusText.textContent = t('cardDetected');
       setTimeout(() => {
-        statusText.textContent = 'Reader Ready';
+        statusText.textContent = t('readerReady');
       }, 3000);
       break;
     case ScanState.NOT_FOUND:
     case ScanState.ERROR:
       statusDot.className = 'status-dot status-dot-error';
-      statusText.textContent = state === ScanState.ERROR ? 'Scan Error' : 'Unknown Card';
+      statusText.textContent = state === ScanState.ERROR ? t('scanError') : t('unknownCard');
       setTimeout(() => {
         statusDot.className = 'status-dot status-dot-ready';
-        statusText.textContent = 'Reader Ready';
+        statusText.textContent = t('readerReady');
       }, 3000);
       break;
     default:
       statusDot.className = 'status-dot status-dot-ready';
-      statusText.textContent = 'Reader Ready';
+      statusText.textContent = t('readerReady');
   }
 }
 
@@ -128,7 +128,7 @@ async function loadDashboard() {
     animateStatValue('stat-total-value', stats.total_patients);
     animateStatValue('stat-active-value', stats.active_cards);
     animateStatValue('stat-inactive-value', stats.inactive_cards);
-    document.getElementById('stat-reader-value').textContent = 'Ready';
+    document.getElementById('stat-reader-value').textContent = t('statReady');
 
     const lastScanEl = document.getElementById('last-scan-info');
     if (stats.last_scanned) {
@@ -162,7 +162,7 @@ async function loadDashboard() {
       detail.appendChild(meta);
       lastScanEl.appendChild(detail);
     } else {
-      lastScanEl.innerHTML = '<div class="empty-state empty-state-sm"><p>No patients registered yet</p></div>';
+      lastScanEl.innerHTML = `<div class="empty-state empty-state-sm"><p>${escapeHtml(t('noPatients'))}</p></div>`;
     }
   } catch (err) {
     console.error('Dashboard load error:', err);
@@ -188,13 +188,13 @@ function animateStatValue(elementId, targetValue) {
 
 function getTimeAgo(date) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return 'Just now';
+  if (seconds < 60) return t('justNow');
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t('mAgo', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('hAgo', { n: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return t('dAgo', { n: days });
   return date.toLocaleDateString();
 }
 
@@ -246,7 +246,7 @@ async function apiCall(url, method = 'GET', body = null) {
 async function scanCard() {
   clearAlerts();
   const uid = document.getElementById('read-rfid-input').value.trim();
-  if (!uid) { showAlert('Please scan or enter an RFID UID'); return; }
+  if (!uid) { showAlert(t('alertEnterUid')); return; }
 
   setScanState(ScanState.SCANNING);
 
@@ -263,8 +263,8 @@ async function scanCard() {
       setScanState(ScanState.NOT_FOUND);
       container.innerHTML = renderEmptyState(
         '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-        'Card Deactivated',
-        'This card was previously deactivated. You can reactivate it from the Manage tab.'
+        t('cardDeactivatedTitle'),
+        t('cardDeactivatedMsg')
       );
     } else {
       setScanState(ScanState.NOT_FOUND);
@@ -321,7 +321,7 @@ function renderPatientProfile(p) {
   let customHtml = '';
   const entries = Object.entries(customFields).filter(([k, v]) => k && v);
   if (entries.length) {
-    customHtml = `<div class="custom-fields-display"><h4>Additional Fields</h4><div class="profile-grid">${entries.map(([k, v]) => `<div class="profile-field"><div class="field-label">${escapeHtml(k)}</div><div class="field-value">${escapeHtml(v)}</div></div>`).join('')}</div></div>`;
+    customHtml = `<div class="custom-fields-display"><h4>${escapeHtml(t('additionalFields'))}</h4><div class="profile-grid">${entries.map(([k, v]) => `<div class="profile-field"><div class="field-label">${escapeHtml(k)}</div><div class="field-value">${escapeHtml(v)}</div></div>`).join('')}</div></div>`;
   }
 
   return `
@@ -332,25 +332,25 @@ function renderPatientProfile(p) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
             ${escapeHtml(p.rfid_uid)}
           </span>
-          <span class="status-badge ${p.is_active ? 'status-active' : 'status-inactive'}">${p.is_active ? 'Active' : 'Inactive'}</span>
+          <span class="status-badge ${p.is_active ? 'status-active' : 'status-inactive'}">${p.is_active ? t('active') : t('inactive')}</span>
         </div>
         <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit
+          ${t('edit')}
         </button>
       </div>
       <div class="profile-body">
         <div class="profile-grid">
-          <div class="profile-field"><div class="field-label">Full Name</div><div class="field-value">${escapeHtml(p.full_name)}</div></div>
-          <div class="profile-field"><div class="field-label">Age</div><div class="field-value">${p.age || 'N/A'}</div></div>
-          <div class="profile-field"><div class="field-label">Gender</div><div class="field-value">${escapeHtml(p.gender || 'N/A')}</div></div>
-          <div class="profile-field"><div class="field-label">Diagnosis</div><div class="field-value">${escapeHtml(p.diagnosis || 'N/A')}</div></div>
-          <div class="profile-field" style="grid-column:1/-1;"><div class="field-label">Notes</div><div class="field-value field-value-notes">${escapeHtml(p.notes || 'No notes')}</div></div>
+          <div class="profile-field"><div class="field-label">${escapeHtml(t('profileFullName'))}</div><div class="field-value">${escapeHtml(p.full_name)}</div></div>
+          <div class="profile-field"><div class="field-label">${escapeHtml(t('profileAge'))}</div><div class="field-value">${p.age || t('profileNA')}</div></div>
+          <div class="profile-field"><div class="field-label">${escapeHtml(t('profileGender'))}</div><div class="field-value">${escapeHtml(p.gender || t('profileNA'))}</div></div>
+          <div class="profile-field"><div class="field-label">${escapeHtml(t('profileDiagnosis'))}</div><div class="field-value">${escapeHtml(p.diagnosis || t('profileNA'))}</div></div>
+          <div class="profile-field" style="grid-column:1/-1;"><div class="field-label">${escapeHtml(t('profileNotes'))}</div><div class="field-value field-value-notes">${escapeHtml(p.notes || t('profileNoNotes'))}</div></div>
         </div>
         ${customHtml}
       </div>
       <div class="profile-footer">
-        <span class="profile-meta">Registered: ${new Date(p.created_at).toLocaleDateString()} &middot; Updated: ${new Date(p.updated_at).toLocaleDateString()}</span>
+        <span class="profile-meta">${t('profileRegistered')}: ${new Date(p.created_at).toLocaleDateString()} &middot; ${t('profileUpdated')}: ${new Date(p.updated_at).toLocaleDateString()}</span>
       </div>
     </div>`;
 }
@@ -365,20 +365,20 @@ function bindPatientViewEvents(container) {
 async function checkCardForRegistration() {
   clearAlerts();
   const uid = document.getElementById('reg-rfid-input').value.trim();
-  if (!uid) { showAlert('Please scan or enter an RFID UID'); return; }
+  if (!uid) { showAlert(t('alertEnterUid')); return; }
   try {
     const data = await apiCall('/api/patients/scan', 'POST', { rfid_uid: uid });
     if (data.found) {
-      showAlert('This card is already registered to: ' + data.patient.full_name, 'warning');
+      showAlert(t('alertCardRegistered') + data.patient.full_name, 'warning');
       document.getElementById('reg-form-container').classList.add('hidden');
       return;
     }
     if (data.deactivated) {
-      showAlert('This card was previously deactivated. Use a new card or reactivate it from Manage.', 'warning');
+      showAlert(t('alertCardDeactivated'), 'warning');
       document.getElementById('reg-form-container').classList.add('hidden');
       return;
     }
-    showAlert('Card is available for registration!', 'success');
+    showAlert(t('alertCardAvailable'), 'success');
     document.getElementById('reg-rfid-uid').value = uid.toUpperCase();
     document.getElementById('reg-form-container').classList.remove('hidden');
     document.getElementById('reg-name').focus();
@@ -393,7 +393,7 @@ async function registerPatient(e) {
 
   const nameField = document.getElementById('reg-name');
   if (!nameField.value.trim()) {
-    showAlert('Patient name is required', 'error');
+    showAlert(t('alertNameRequired'), 'error');
     nameField.focus();
     return;
   }
@@ -410,7 +410,7 @@ async function registerPatient(e) {
   };
   try {
     await apiCall('/api/patients/register', 'POST', body);
-    showAlert('Patient registered successfully!', 'success');
+    showAlert(t('alertRegistered'), 'success');
     document.getElementById('registration-form').reset();
     document.getElementById('reg-rfid-input').value = '';
     document.getElementById('reg-form-container').classList.add('hidden');
@@ -443,8 +443,8 @@ async function loadPatients() {
     if (!data.patients.length) {
       container.innerHTML = renderEmptyState(
         '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
-        'No patients found',
-        searchTerm ? 'Try a different search term' : 'Register patients using the Register Card tab'
+        t('noPatientsFound'),
+        searchTerm ? t('tryDifferentSearch') : t('registerFromManage')
       );
       return;
     }
@@ -460,7 +460,7 @@ async function loadPatients() {
       item.className = 'patient-list-item';
       item.setAttribute('tabindex', '0');
       item.setAttribute('role', 'button');
-      item.setAttribute('aria-label', `View ${p.full_name}`);
+      item.setAttribute('aria-label', `${t('edit')} ${p.full_name}`);
       item.addEventListener('click', () => openEditModal(p.id));
       item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(p.id); } });
 
@@ -480,11 +480,11 @@ async function loadPatients() {
 
       const meta = document.createElement('span');
       meta.className = 'patient-diagnosis';
-      meta.textContent = p.diagnosis || 'No diagnosis';
+      meta.textContent = p.diagnosis || t('noDiagnosis');
 
       const badge = document.createElement('span');
       badge.className = `status-badge ${p.is_active ? 'status-active' : 'status-inactive'}`;
-      badge.textContent = p.is_active ? 'Active' : 'Inactive';
+      badge.textContent = p.is_active ? t('active') : t('inactive');
 
       actions.appendChild(meta);
       actions.appendChild(badge);
@@ -492,13 +492,13 @@ async function loadPatients() {
       if (p.is_active) {
         const deactBtn = document.createElement('button');
         deactBtn.className = 'btn btn-danger btn-sm';
-        deactBtn.textContent = 'Deactivate';
+        deactBtn.textContent = t('deactivate');
         deactBtn.addEventListener('click', (e) => { e.stopPropagation(); confirmDeactivate(p.id, p.full_name); });
         actions.appendChild(deactBtn);
       } else {
         const reactBtn = document.createElement('button');
         reactBtn.className = 'btn btn-success btn-sm';
-        reactBtn.textContent = 'Reactivate';
+        reactBtn.textContent = t('reactivate');
         reactBtn.addEventListener('click', (e) => { e.stopPropagation(); confirmReactivate(p.id, p.full_name); });
         actions.appendChild(reactBtn);
       }
@@ -564,7 +564,7 @@ async function saveEdit(e) {
   };
   try {
     await apiCall(`/api/patients/${id}`, 'PUT', body);
-    showAlert('Patient updated successfully!', 'success');
+    showAlert(t('alertUpdated'), 'success');
     closeEditModal();
     if (currentMode === 'manage') loadPatients();
     if (currentMode === 'reading') {
@@ -578,15 +578,15 @@ async function saveEdit(e) {
 
 /* --- CONFIRM MODALS --- */
 function confirmDeactivate(id, name) {
-  document.getElementById('confirm-title').textContent = 'Deactivate Patient Card';
-  document.getElementById('confirm-message').textContent = `Are you sure you want to deactivate the card for "${name}"? The patient data will be preserved but the card will no longer work for scanning.`;
+  document.getElementById('confirm-title').textContent = t('deactivateTitle');
+  document.getElementById('confirm-message').textContent = t('deactivateMsg', { name });
   document.getElementById('confirm-btn').className = 'btn btn-danger';
-  document.getElementById('confirm-btn').textContent = 'Deactivate';
+  document.getElementById('confirm-btn').textContent = t('deactivate');
   document.getElementById('confirm-modal').classList.add('active');
   pendingConfirmAction = async () => {
     try {
       await apiCall(`/api/patients/${id}`, 'DELETE');
-      showAlert('Patient card deactivated', 'success');
+      showAlert(t('alertDeactivated'), 'success');
       loadPatients();
     } catch (err) {
       showAlert(err.message);
@@ -595,15 +595,15 @@ function confirmDeactivate(id, name) {
 }
 
 function confirmReactivate(id, name) {
-  document.getElementById('confirm-title').textContent = 'Reactivate Patient Card';
-  document.getElementById('confirm-message').textContent = `Are you sure you want to reactivate the card for "${name}"? The patient will become active again.`;
+  document.getElementById('confirm-title').textContent = t('reactivateTitle');
+  document.getElementById('confirm-message').textContent = t('reactivateMsg', { name });
   document.getElementById('confirm-btn').className = 'btn btn-success';
-  document.getElementById('confirm-btn').textContent = 'Reactivate';
+  document.getElementById('confirm-btn').textContent = t('reactivate');
   document.getElementById('confirm-modal').classList.add('active');
   pendingConfirmAction = async () => {
     try {
       await apiCall(`/api/patients/${id}/reactivate`, 'POST');
-      showAlert('Patient card reactivated', 'success');
+      showAlert(t('alertReactivated'), 'success');
       loadPatients();
     } catch (err) {
       showAlert(err.message);
@@ -633,21 +633,21 @@ function addCustomFieldRow(prefix, key = '', val = '') {
 
   const keyInput = document.createElement('input');
   keyInput.type = 'text';
-  keyInput.placeholder = 'Field name';
+  keyInput.placeholder = t('fieldName');
   keyInput.className = 'cf-key';
   keyInput.value = key;
 
   const valInput = document.createElement('input');
   valInput.type = 'text';
-  valInput.placeholder = 'Value';
+  valInput.placeholder = t('value');
   valInput.className = 'cf-val';
   valInput.value = val;
 
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'btn btn-danger btn-sm';
-  removeBtn.textContent = 'Remove';
-  removeBtn.setAttribute('aria-label', 'Remove custom field');
+  removeBtn.textContent = t('remove');
+  removeBtn.setAttribute('aria-label', t('remove'));
   removeBtn.addEventListener('click', () => row.remove());
 
   row.appendChild(keyInput);
@@ -684,6 +684,10 @@ function initEventBindings() {
   });
 
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  document.getElementById('lang-select').addEventListener('change', (e) => {
+    setLanguage(e.target.value);
+  });
 
   document.getElementById('scan-btn').addEventListener('click', scanCard);
   document.getElementById('read-rfid-input').addEventListener('keydown', (e) => {
@@ -740,6 +744,7 @@ function initEventBindings() {
 /* --- INIT --- */
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  initLanguage();
   initEventBindings();
   loadDashboard();
 });

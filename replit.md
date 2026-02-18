@@ -20,8 +20,9 @@ src/
     patients.js        - REST API routes for patient CRUD
 public/
   index.html           - Main application page (sidebar layout)
-  css/style.css        - Design system (tokens, themes, components, animations)
+  css/style.css        - Design system (tokens, themes, components, animations, RTL)
   js/app.js            - Frontend application logic (theme, RFID state machine, CRUD)
+  js/i18n.js           - Internationalization: translations (EN/AR/FR), RTL support
 ```
 
 ## Design System
@@ -39,6 +40,7 @@ public/
 - **Smart RFID Flow**: Unregistered cards trigger a modal prompt offering one-click registration instead of a dead-end
 - **Registration Mode**: Register new cards with patient data + custom fields
 - **Management Mode**: Search, edit, deactivate/reactivate patients
+- **Multi-language**: English, Arabic (RTL), French — language selector in sidebar, persisted in localStorage
 - **Theme Toggle**: Light/dark mode switch in sidebar footer
 - **RFID State Machine**: Visual feedback for idle, scanning, found, unknown, error states
 - **Custom Fields**: Dynamic JSON fields for extensibility
@@ -61,6 +63,7 @@ public/
 - `node server.js` starts on port 5000
 
 ## Recent Changes
+- 2026-02-18: Added multi-language support (English, Arabic with RTL, French) with language selector in sidebar and full UI translation
 - 2026-02-18: Added Dashboard as central entry point with stat cards, last activity, and quick actions; implemented smart RFID flow with unregistered card modal prompt
 - 2026-02-18: Major UX/UI redesign — sidebar layout, design token system, light/dark themes, RFID state-driven animations, skeleton loaders, accessibility improvements, component library
 - 2026-02-18: Initial build - full CRUD, RFID scanning, registration, management modes
