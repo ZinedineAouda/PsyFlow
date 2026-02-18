@@ -73,20 +73,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const patient = await db.deactivatePatient(id);
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found' });
-    }
-    res.json({ success: true, message: 'Patient card deactivated' });
-  } catch (err) {
-    console.error('Deactivation error:', err);
-    res.status(500).json({ error: 'Failed to deactivate patient' });
-  }
-});
-
 router.delete('/:id/permanent', async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,6 +84,20 @@ router.delete('/:id/permanent', async (req, res) => {
   } catch (err) {
     console.error('Delete error:', err);
     res.status(500).json({ error: 'Failed to delete patient' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await db.deactivatePatient(id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    res.json({ success: true, message: 'Patient card deactivated' });
+  } catch (err) {
+    console.error('Deactivation error:', err);
+    res.status(500).json({ error: 'Failed to deactivate patient' });
   }
 });
 
