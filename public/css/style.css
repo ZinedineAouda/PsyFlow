@@ -504,7 +504,8 @@ body {
   transition: color var(--transition-base);
 }
 
-.input-with-icon input {
+.input-with-icon input,
+.input-with-icon .rfid-input {
   padding-left: 42px;
 }
 
