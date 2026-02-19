@@ -113,18 +113,22 @@ async function getDashboardStats() {
   };
 }
 
-async function createVisit(patientId, notes) {
+async function createVisit(patientId, notes, visitDate) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    await client.query(
+      'SELECT id FROM patients WHERE id = $1 FOR UPDATE',
+      [patientId]
+    );
     const countResult = await client.query(
-      'SELECT COUNT(*) AS cnt FROM visits WHERE patient_id = $1 FOR UPDATE',
+      'SELECT COUNT(*) AS cnt FROM visits WHERE patient_id = $1',
       [patientId]
     );
     const visitNumber = parseInt(countResult.rows[0].cnt) + 1;
     const result = await client.query(
-      'INSERT INTO visits (patient_id, visit_number, notes) VALUES ($1, $2, $3) RETURNING *',
-      [patientId, visitNumber, notes || null]
+      'INSERT INTO visits (patient_id, visit_number, notes, visit_date) VALUES ($1, $2, $3, $4) RETURNING *',
+      [patientId, visitNumber, notes || null, visitDate || new Date().toISOString().split('T')[0]]
     );
     await client.query('COMMIT');
     return result.rows[0];
@@ -134,6 +138,22 @@ async function createVisit(patientId, notes) {
   } finally {
     client.release();
   }
+}
+
+async function updateVisit(visitId, patientId, notes, visitDate) {
+  const result = await pool.query(
+    'UPDATE visits SET notes = $1, visit_date = $2 WHERE id = $3 AND patient_id = $4 RETURNING *',
+    [notes || null, visitDate, visitId, patientId]
+  );
+  return result.rows[0];
+}
+
+async function deleteVisit(visitId, patientId) {
+  const result = await pool.query(
+    'DELETE FROM visits WHERE id = $1 AND patient_id = $2 RETURNING *',
+    [visitId, patientId]
+  );
+  return result.rows[0];
 }
 
 async function getVisits(patientId) {
@@ -175,6 +195,8 @@ module.exports = {
   checkRfidExists,
   getDashboardStats,
   createVisit,
+  updateVisit,
+  deleteVisit,
   getVisits,
   getVisitCount,
 };

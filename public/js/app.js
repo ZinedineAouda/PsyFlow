@@ -288,6 +288,34 @@ function renderEmptyState(iconHtml, title, message) {
   return `<div class="card" style="padding:0;"><div class="empty-state"><div class="empty-state-icon">${iconHtml}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(message)}</p></div></div>`;
 }
 
+function renderVisitsList(visits) {
+  if (visits.length > 0) {
+    return visits.map(v => {
+      const dateStr = v.visit_date ? new Date(v.visit_date).toLocaleDateString() : new Date(v.created_at).toLocaleDateString();
+      const timeStr = new Date(v.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      return `
+      <div class="visit-item" data-visit-id="${v.id}">
+        <div class="visit-header">
+          <div class="visit-header-left">
+            <span class="visit-number">${t('visitNumber', { num: v.visit_number })}</span>
+            <span class="visit-date">${dateStr} ${timeStr}</span>
+          </div>
+          <div class="visit-actions">
+            <button class="btn-icon btn-icon-sm" data-action="edit-visit" data-visit-id="${v.id}" data-visit-notes-raw="${btoa(encodeURIComponent(v.notes || ''))}" data-visit-date="${v.visit_date || ''}" data-patient-id="${v.patient_id}" title="${t('editVisit')}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon btn-icon-sm btn-icon-danger" data-action="delete-visit" data-visit-id="${v.id}" data-patient-id="${v.patient_id}" data-visit-num="${v.visit_number}" title="${t('deleteVisit')}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="visit-notes">${escapeHtml(v.notes || t('noVisitNotes'))}</div>
+      </div>`;
+    }).join('');
+  }
+  return `<p class="visit-empty">${t('noVisitsYet')}</p>`;
+}
+
 /* --- PATIENT PROFILE VIEW --- */
 function renderPatientProfile(p, visits = [], totalVisits = 0) {
   const customFields = typeof p.custom_fields === 'string' ? JSON.parse(p.custom_fields) : (p.custom_fields || {});
@@ -297,20 +325,7 @@ function renderPatientProfile(p, visits = [], totalVisits = 0) {
     customHtml = `<div class="custom-fields-display"><h4>${escapeHtml(t('additionalFields'))}</h4><div class="profile-grid">${entries.map(([k, v]) => `<div class="profile-field"><div class="field-label">${escapeHtml(k)}</div><div class="field-value">${escapeHtml(v)}</div></div>`).join('')}</div></div>`;
   }
 
-  let visitsHtml = '';
-  if (visits.length > 0) {
-    visitsHtml = visits.map(v => `
-      <div class="visit-item">
-        <div class="visit-header">
-          <span class="visit-number">${t('visitNumber', { num: v.visit_number })}</span>
-          <span class="visit-date">${new Date(v.created_at).toLocaleDateString()} ${new Date(v.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-        </div>
-        <div class="visit-notes">${escapeHtml(v.notes || t('noVisitNotes'))}</div>
-      </div>
-    `).join('');
-  } else {
-    visitsHtml = `<p class="visit-empty">${t('noVisitsYet')}</p>`;
-  }
+  const visitsHtml = renderVisitsList(visits);
 
   return `
     <div class="patient-profile">
@@ -350,6 +365,10 @@ function renderPatientProfile(p, visits = [], totalVisits = 0) {
           </button>
         </div>
         <div id="add-visit-form" class="add-visit-form hidden">
+          <div class="visit-date-row">
+            <label class="visit-date-label">${t('visitDate')}</label>
+            <input type="date" id="visit-date-input" class="visit-date-input">
+          </div>
           <textarea id="visit-notes-input" class="visit-notes-textarea" rows="3" data-i18n-placeholder="visitNotesPlaceholder" placeholder="${t('visitNotesPlaceholder')}"></textarea>
           <div class="add-visit-actions">
             <button class="btn btn-ghost btn-sm" data-action="cancel-visit">${t('cancel')}</button>
@@ -366,13 +385,96 @@ function renderPatientProfile(p, visits = [], totalVisits = 0) {
     </div>`;
 }
 
+async function refreshVisitsInPlace(container, patientId) {
+  const visitData = await apiCall(`/api/patients/${patientId}/visits`);
+  const visitList = container.querySelector('.visit-list');
+  if (visitList) {
+    visitList.innerHTML = renderVisitsList(visitData.visits);
+    bindVisitItemEvents(container, patientId);
+  }
+  const badge = container.querySelector('.visit-count-badge');
+  if (badge) badge.textContent = t('totalVisits', { count: visitData.total_visits });
+}
+
+function bindVisitItemEvents(container, patientId) {
+  container.querySelectorAll('[data-action="edit-visit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const visitId = btn.dataset.visitId;
+      const visitItem = container.querySelector(`.visit-item[data-visit-id="${visitId}"]`);
+      if (!visitItem || visitItem.querySelector('.edit-visit-form')) return;
+
+      const currentNotes = decodeURIComponent(atob(btn.dataset.visitNotesRaw || ''));
+      const currentDate = btn.dataset.visitDate ? btn.dataset.visitDate.split('T')[0] : localDateString();
+
+      const editForm = document.createElement('div');
+      editForm.className = 'edit-visit-form';
+      editForm.innerHTML = `
+        <div class="visit-date-row">
+          <label class="visit-date-label">${t('visitDate')}</label>
+          <input type="date" class="visit-date-input edit-visit-date" value="${currentDate}">
+        </div>
+        <textarea class="visit-notes-textarea edit-visit-notes" rows="3" placeholder="${t('visitNotesPlaceholder')}"></textarea>
+        <div class="add-visit-actions">
+          <button class="btn btn-ghost btn-sm cancel-edit-visit">${t('cancel')}</button>
+          <button class="btn btn-primary btn-sm save-edit-visit">${t('saveVisit')}</button>
+        </div>
+      `;
+
+      visitItem.querySelector('.visit-notes').classList.add('hidden');
+      visitItem.appendChild(editForm);
+      editForm.querySelector('.edit-visit-notes').value = currentNotes;
+
+      editForm.querySelector('.cancel-edit-visit').addEventListener('click', () => {
+        visitItem.querySelector('.visit-notes').classList.remove('hidden');
+        editForm.remove();
+      });
+
+      editForm.querySelector('.save-edit-visit').addEventListener('click', async () => {
+        const newNotes = editForm.querySelector('.edit-visit-notes').value.trim();
+        const newDate = editForm.querySelector('.edit-visit-date').value;
+        try {
+          await apiCall(`/api/patients/${patientId}/visits/${visitId}`, 'PUT', { notes: newNotes, visit_date: newDate });
+          showAlert(t('visitUpdated'), 'success');
+          await refreshVisitsInPlace(container, patientId);
+        } catch (err) {
+          showAlert(err.message);
+        }
+      });
+    });
+  });
+
+  container.querySelectorAll('[data-action="delete-visit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const visitId = btn.dataset.visitId;
+      const visitNum = btn.dataset.visitNum;
+      const pid = btn.dataset.patientId;
+      document.getElementById('confirm-title').textContent = t('deleteVisitTitle');
+      document.getElementById('confirm-message').textContent = t('deleteVisitMsg', { num: visitNum });
+      document.getElementById('confirm-btn').className = 'btn btn-danger';
+      document.getElementById('confirm-btn').textContent = t('delete');
+      document.getElementById('confirm-modal').classList.add('active');
+      pendingConfirmAction = async () => {
+        try {
+          await apiCall(`/api/patients/${pid}/visits/${visitId}`, 'DELETE');
+          showAlert(t('visitDeleted'), 'success');
+          await refreshVisitsInPlace(container, pid);
+        } catch (err) {
+          showAlert(err.message);
+        }
+      };
+    });
+  });
+}
+
 function bindPatientViewEvents(container, patientId) {
   container.querySelectorAll('[data-action="edit"]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.id)));
   });
   container.querySelectorAll('[data-action="add-visit"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('add-visit-form').classList.remove('hidden');
+      const form = document.getElementById('add-visit-form');
+      form.classList.remove('hidden');
+      document.getElementById('visit-date-input').value = localDateString();
       document.getElementById('visit-notes-input').focus();
     });
   });
@@ -385,27 +487,12 @@ function bindPatientViewEvents(container, patientId) {
   container.querySelectorAll('[data-action="save-visit"]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const notes = document.getElementById('visit-notes-input').value.trim();
+      const visitDate = document.getElementById('visit-date-input').value;
       const pid = btn.dataset.id;
       try {
-        await apiCall(`/api/patients/${pid}/visits`, 'POST', { notes });
+        await apiCall(`/api/patients/${pid}/visits`, 'POST', { notes, visit_date: visitDate });
         showAlert(t('visitSaved'), 'success');
-        const visitData = await apiCall(`/api/patients/${pid}/visits`);
-        const visitList = container.querySelector('.visit-list');
-        if (visitList) {
-          if (visitData.visits.length > 0) {
-            visitList.innerHTML = visitData.visits.map(v => `
-              <div class="visit-item">
-                <div class="visit-header">
-                  <span class="visit-number">${t('visitNumber', { num: v.visit_number })}</span>
-                  <span class="visit-date">${new Date(v.created_at).toLocaleDateString()} ${new Date(v.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                </div>
-                <div class="visit-notes">${escapeHtml(v.notes || t('noVisitNotes'))}</div>
-              </div>
-            `).join('');
-          }
-        }
-        const badge = container.querySelector('.visit-count-badge');
-        if (badge) badge.textContent = t('totalVisits', { count: visitData.total_visits });
+        await refreshVisitsInPlace(container, pid);
         document.getElementById('add-visit-form').classList.add('hidden');
         document.getElementById('visit-notes-input').value = '';
       } catch (err) {
@@ -413,6 +500,7 @@ function bindPatientViewEvents(container, patientId) {
       }
     });
   });
+  bindVisitItemEvents(container, patientId);
 }
 
 /* --- REGISTRATION --- */
@@ -727,6 +815,11 @@ function collectCustomFields(prefix) {
 }
 
 /* --- UTILITIES --- */
+function localDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   const div = document.createElement('div');

@@ -158,16 +158,43 @@ router.get('/:id/visits', async (req, res) => {
 
 router.post('/:id/visits', async (req, res) => {
   try {
-    const { notes } = req.body;
+    const { notes, visit_date } = req.body;
     const patient = await db.findPatientById(req.params.id);
     if (!patient) {
       return res.status(404).json({ error: 'Patient not found' });
     }
-    const visit = await db.createVisit(req.params.id, notes);
+    const visit = await db.createVisit(req.params.id, notes, visit_date);
     res.json({ success: true, visit });
   } catch (err) {
     console.error('Visit create error:', err);
     res.status(500).json({ error: 'Failed to record visit' });
+  }
+});
+
+router.put('/:id/visits/:visitId', async (req, res) => {
+  try {
+    const { notes, visit_date } = req.body;
+    const visit = await db.updateVisit(req.params.visitId, req.params.id, notes, visit_date);
+    if (!visit) {
+      return res.status(404).json({ error: 'Visit not found' });
+    }
+    res.json({ success: true, visit });
+  } catch (err) {
+    console.error('Visit update error:', err);
+    res.status(500).json({ error: 'Failed to update visit' });
+  }
+});
+
+router.delete('/:id/visits/:visitId', async (req, res) => {
+  try {
+    const visit = await db.deleteVisit(req.params.visitId, req.params.id);
+    if (!visit) {
+      return res.status(404).json({ error: 'Visit not found' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Visit delete error:', err);
+    res.status(500).json({ error: 'Failed to delete visit' });
   }
 });
 

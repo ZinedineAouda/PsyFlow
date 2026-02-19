@@ -56,11 +56,16 @@ public/
 - POST /api/patients/:id/reactivate - Reactivate patient
 - GET /api/patients - List/search patients
 - GET /api/patients/:id - Get single patient
+- GET /api/patients/:id/visits - Get patient visits
+- POST /api/patients/:id/visits - Create visit (with visit_date, notes)
+- PUT /api/patients/:id/visits/:visitId - Update visit
+- DELETE /api/patients/:id/visits/:visitId - Delete visit
 
 ## Running
 - `node server.js` starts on port 5000
 
 ## Recent Changes
+- 2026-02-19: Enhanced visit history — date picker for visits, inline edit/delete per visit with confirmation, translations in all 3 languages
 - 2026-02-18: Merged Read Card and Register Card into unified flow — scan a card to view or register
 - 2026-02-18: Added multi-language support (English, Arabic with RTL, French) with language selector in sidebar and full UI translation
 - 2026-02-18: Added Dashboard as central entry point with stat cards, last activity, and quick actions

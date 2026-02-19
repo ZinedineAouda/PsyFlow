@@ -19,9 +19,20 @@ CREATE TABLE IF NOT EXISTS visits (
     id SERIAL PRIMARY KEY,
     patient_id INTEGER NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     visit_number INTEGER NOT NULL,
+    visit_date DATE NOT NULL DEFAULT CURRENT_DATE,
     notes TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_visits_patient ON visits(patient_id);
 CREATE INDEX IF NOT EXISTS idx_visits_created ON visits(created_at DESC);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'visits' AND column_name = 'visit_date'
+  ) THEN
+    ALTER TABLE visits ADD COLUMN visit_date DATE NOT NULL DEFAULT CURRENT_DATE;
+  END IF;
+END $$;
