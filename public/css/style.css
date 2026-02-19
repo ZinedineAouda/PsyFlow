@@ -1109,6 +1109,123 @@ textarea {
   overflow-y: auto;
 }
 
+/* --- VISIT HISTORY --- */
+.visit-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--info-light);
+  color: var(--info);
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.visit-section {
+  margin-top: var(--space-lg);
+  border-top: 1px solid var(--border-default);
+  padding-top: var(--space-lg);
+}
+
+.visit-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.visit-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.add-visit-form {
+  background: var(--bg-inset);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--border-default);
+}
+
+.visit-notes-textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition-base);
+  box-sizing: border-box;
+}
+
+.visit-notes-textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.add-visit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.visit-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.visit-item {
+  background: var(--bg-inset);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border-default);
+}
+
+.visit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.visit-number {
+  font-weight: 600;
+  font-size: var(--font-sm);
+  color: var(--primary);
+}
+
+.visit-date {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.visit-notes {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.visit-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  padding: var(--space-lg) 0;
+}
+
 /* --- DASHBOARD --- */
 .dashboard-grid {
   display: grid;

@@ -141,13 +141,44 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id/visits', async (req, res) => {
+  try {
+    const patient = await db.findPatientById(req.params.id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    const visits = await db.getVisits(req.params.id);
+    const count = await db.getVisitCount(req.params.id);
+    res.json({ visits, total_visits: count });
+  } catch (err) {
+    console.error('Visits fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch visits' });
+  }
+});
+
+router.post('/:id/visits', async (req, res) => {
+  try {
+    const { notes } = req.body;
+    const patient = await db.findPatientById(req.params.id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    const visit = await db.createVisit(req.params.id, notes);
+    res.json({ success: true, visit });
+  } catch (err) {
+    console.error('Visit create error:', err);
+    res.status(500).json({ error: 'Failed to record visit' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const patient = await db.findPatientById(req.params.id);
     if (!patient) {
       return res.status(404).json({ error: 'Patient not found' });
     }
-    res.json({ patient });
+    const visitCount = await db.getVisitCount(req.params.id);
+    res.json({ patient, visit_count: visitCount });
   } catch (err) {
     console.error('Fetch error:', err);
     res.status(500).json({ error: 'Failed to fetch patient' });

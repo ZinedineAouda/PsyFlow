@@ -254,8 +254,9 @@ async function scanCard() {
     if (data.found) {
       setScanState(ScanState.FOUND);
       document.getElementById('reg-form-container').classList.add('hidden');
-      container.innerHTML = renderPatientProfile(data.patient);
-      bindPatientViewEvents(container);
+      const visitData = await apiCall(`/api/patients/${data.patient.id}/visits`);
+      container.innerHTML = renderPatientProfile(data.patient, visitData.visits, visitData.total_visits);
+      bindPatientViewEvents(container, data.patient.id);
     } else if (data.deactivated) {
       setScanState(ScanState.NOT_FOUND);
       document.getElementById('reg-form-container').classList.add('hidden');
@@ -288,12 +289,27 @@ function renderEmptyState(iconHtml, title, message) {
 }
 
 /* --- PATIENT PROFILE VIEW --- */
-function renderPatientProfile(p) {
+function renderPatientProfile(p, visits = [], totalVisits = 0) {
   const customFields = typeof p.custom_fields === 'string' ? JSON.parse(p.custom_fields) : (p.custom_fields || {});
   let customHtml = '';
   const entries = Object.entries(customFields).filter(([k, v]) => k && v);
   if (entries.length) {
     customHtml = `<div class="custom-fields-display"><h4>${escapeHtml(t('additionalFields'))}</h4><div class="profile-grid">${entries.map(([k, v]) => `<div class="profile-field"><div class="field-label">${escapeHtml(k)}</div><div class="field-value">${escapeHtml(v)}</div></div>`).join('')}</div></div>`;
+  }
+
+  let visitsHtml = '';
+  if (visits.length > 0) {
+    visitsHtml = visits.map(v => `
+      <div class="visit-item">
+        <div class="visit-header">
+          <span class="visit-number">${t('visitNumber', { num: v.visit_number })}</span>
+          <span class="visit-date">${new Date(v.created_at).toLocaleDateString()} ${new Date(v.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+        <div class="visit-notes">${escapeHtml(v.notes || t('noVisitNotes'))}</div>
+      </div>
+    `).join('');
+  } else {
+    visitsHtml = `<p class="visit-empty">${t('noVisitsYet')}</p>`;
   }
 
   return `
@@ -305,6 +321,7 @@ function renderPatientProfile(p) {
             ${escapeHtml(p.rfid_uid)}
           </span>
           <span class="status-badge ${p.is_active ? 'status-active' : 'status-inactive'}">${p.is_active ? t('active') : t('inactive')}</span>
+          <span class="visit-count-badge">${t('totalVisits', { count: totalVisits })}</span>
         </div>
         <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.id}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -321,15 +338,80 @@ function renderPatientProfile(p) {
         </div>
         ${customHtml}
       </div>
+      <div class="visit-section">
+        <div class="visit-section-header">
+          <h3 class="visit-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${t('visitHistory')}
+          </h3>
+          <button class="btn btn-primary btn-sm" data-action="add-visit" data-id="${p.id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            ${t('addVisit')}
+          </button>
+        </div>
+        <div id="add-visit-form" class="add-visit-form hidden">
+          <textarea id="visit-notes-input" class="visit-notes-textarea" rows="3" data-i18n-placeholder="visitNotesPlaceholder" placeholder="${t('visitNotesPlaceholder')}"></textarea>
+          <div class="add-visit-actions">
+            <button class="btn btn-ghost btn-sm" data-action="cancel-visit">${t('cancel')}</button>
+            <button class="btn btn-primary btn-sm" data-action="save-visit" data-id="${p.id}">${t('saveVisit')}</button>
+          </div>
+        </div>
+        <div class="visit-list">
+          ${visitsHtml}
+        </div>
+      </div>
       <div class="profile-footer">
         <span class="profile-meta">${t('profileRegistered')}: ${new Date(p.created_at).toLocaleDateString()} &middot; ${t('profileUpdated')}: ${new Date(p.updated_at).toLocaleDateString()}</span>
       </div>
     </div>`;
 }
 
-function bindPatientViewEvents(container) {
+function bindPatientViewEvents(container, patientId) {
   container.querySelectorAll('[data-action="edit"]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.id)));
+  });
+  container.querySelectorAll('[data-action="add-visit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('add-visit-form').classList.remove('hidden');
+      document.getElementById('visit-notes-input').focus();
+    });
+  });
+  container.querySelectorAll('[data-action="cancel-visit"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('add-visit-form').classList.add('hidden');
+      document.getElementById('visit-notes-input').value = '';
+    });
+  });
+  container.querySelectorAll('[data-action="save-visit"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const notes = document.getElementById('visit-notes-input').value.trim();
+      const pid = btn.dataset.id;
+      try {
+        await apiCall(`/api/patients/${pid}/visits`, 'POST', { notes });
+        showAlert(t('visitSaved'), 'success');
+        const visitData = await apiCall(`/api/patients/${pid}/visits`);
+        const visitList = container.querySelector('.visit-list');
+        if (visitList) {
+          if (visitData.visits.length > 0) {
+            visitList.innerHTML = visitData.visits.map(v => `
+              <div class="visit-item">
+                <div class="visit-header">
+                  <span class="visit-number">${t('visitNumber', { num: v.visit_number })}</span>
+                  <span class="visit-date">${new Date(v.created_at).toLocaleDateString()} ${new Date(v.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="visit-notes">${escapeHtml(v.notes || t('noVisitNotes'))}</div>
+              </div>
+            `).join('');
+          }
+        }
+        const badge = container.querySelector('.visit-count-badge');
+        if (badge) badge.textContent = t('totalVisits', { count: visitData.total_visits });
+        document.getElementById('add-visit-form').classList.add('hidden');
+        document.getElementById('visit-notes-input').value = '';
+      } catch (err) {
+        showAlert(err.message);
+      }
+    });
   });
 }
 

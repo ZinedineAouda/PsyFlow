@@ -113,6 +113,45 @@ async function getDashboardStats() {
   };
 }
 
+async function createVisit(patientId, notes) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const countResult = await client.query(
+      'SELECT COUNT(*) AS cnt FROM visits WHERE patient_id = $1 FOR UPDATE',
+      [patientId]
+    );
+    const visitNumber = parseInt(countResult.rows[0].cnt) + 1;
+    const result = await client.query(
+      'INSERT INTO visits (patient_id, visit_number, notes) VALUES ($1, $2, $3) RETURNING *',
+      [patientId, visitNumber, notes || null]
+    );
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function getVisits(patientId) {
+  const result = await pool.query(
+    'SELECT * FROM visits WHERE patient_id = $1 ORDER BY created_at DESC',
+    [patientId]
+  );
+  return result.rows;
+}
+
+async function getVisitCount(patientId) {
+  const result = await pool.query(
+    'SELECT COUNT(*) AS count FROM visits WHERE patient_id = $1',
+    [patientId]
+  );
+  return parseInt(result.rows[0].count);
+}
+
 async function checkRfidExists(rfidUid) {
   const result = await pool.query(
     'SELECT id, is_active FROM patients WHERE rfid_uid = $1',
@@ -135,4 +174,7 @@ module.exports = {
   searchPatients,
   checkRfidExists,
   getDashboardStats,
+  createVisit,
+  getVisits,
+  getVisitCount,
 };
