@@ -490,7 +490,6 @@ function renderPatientProfile(p, visits = [], totalVisits = 0, documents = []) {
             <label class="visit-date-label">${t('visitDate')}</label>
             <input type="date" id="visit-date-input" class="visit-date-input">
           </div>
-          ${renderVisitFormFields('add')}
           <textarea id="visit-notes-input" class="visit-notes-textarea" rows="3" data-i18n-placeholder="visitNotesPlaceholder" placeholder="${t('visitNotesPlaceholder')}"></textarea>
           <div class="add-visit-actions">
             <button class="btn btn-ghost btn-sm" data-action="cancel-visit">${t('cancel')}</button>
@@ -552,7 +551,6 @@ function bindVisitItemEvents(container, patientId) {
           <label class="visit-date-label">${t('visitDate')}</label>
           <input type="date" class="visit-date-input edit-visit-date" value="${currentDate}">
         </div>
-        ${renderVisitFormFields('editv' + visitId, vData)}
         <textarea class="visit-notes-textarea edit-visit-notes" rows="3" placeholder="${t('visitNotesPlaceholder')}"></textarea>
         <div class="add-visit-actions">
           <button class="btn btn-ghost btn-sm cancel-edit-visit">${t('cancel')}</button>
@@ -567,7 +565,6 @@ function bindVisitItemEvents(container, patientId) {
       if (metaTags) metaTags.classList.add('hidden');
       visitItem.appendChild(editForm);
       editForm.querySelector('.edit-visit-notes').value = vData.notes || '';
-      bindConsultationTypeToggle(editForm, 'editv' + visitId);
 
       editForm.querySelector('.cancel-edit-visit').addEventListener('click', () => {
         visitItem.querySelector('.visit-notes').classList.remove('hidden');
@@ -579,10 +576,9 @@ function bindVisitItemEvents(container, patientId) {
       editForm.querySelector('.save-edit-visit').addEventListener('click', async () => {
         const newNotes = editForm.querySelector('.edit-visit-notes').value.trim();
         const newDate = editForm.querySelector('.edit-visit-date').value;
-        const extraData = collectVisitFormData(editForm, 'editv' + visitId);
         try {
           await apiCall(`/api/patients/${patientId}/visits/${visitId}`, 'PUT', {
-            notes: newNotes, visit_date: newDate, ...extraData
+            notes: newNotes, visit_date: newDate
           });
           showAlert(t('visitUpdated'), 'success');
           await refreshVisitsInPlace(container, patientId);
@@ -686,10 +682,9 @@ function bindPatientViewEvents(container, patientId) {
       const notes = document.getElementById('visit-notes-input').value.trim();
       const visitDate = document.getElementById('visit-date-input').value;
       const pid = btn.dataset.id;
-      const formData = collectVisitFormData(document.getElementById('add-visit-form'), 'add');
       try {
         await apiCall(`/api/patients/${pid}/visits`, 'POST', {
-          notes, visit_date: visitDate, ...formData
+          notes, visit_date: visitDate
         });
         showAlert(t('visitSaved'), 'success');
         await refreshVisitsInPlace(container, pid);
@@ -700,7 +695,6 @@ function bindPatientViewEvents(container, patientId) {
       }
     });
   });
-  bindConsultationTypeToggle(document.getElementById('add-visit-form'), 'add');
   bindVisitItemEvents(container, patientId);
 
   container.querySelectorAll('.doc-file-input').forEach(input => {
