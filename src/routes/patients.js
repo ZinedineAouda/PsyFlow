@@ -1,6 +1,36 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../db/database');
+
+const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.txt'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not allowed'));
+    }
+  }
+});
 
 router.post('/scan', async (req, res) => {
   try {
@@ -158,12 +188,11 @@ router.get('/:id/visits', async (req, res) => {
 
 router.post('/:id/visits', async (req, res) => {
   try {
-    const { notes, visit_date } = req.body;
     const patient = await db.findPatientById(req.params.id);
     if (!patient) {
       return res.status(404).json({ error: 'Patient not found' });
     }
-    const visit = await db.createVisit(req.params.id, notes, visit_date);
+    const visit = await db.createVisit(req.params.id, req.body);
     res.json({ success: true, visit });
   } catch (err) {
     console.error('Visit create error:', err);
@@ -173,8 +202,7 @@ router.post('/:id/visits', async (req, res) => {
 
 router.put('/:id/visits/:visitId', async (req, res) => {
   try {
-    const { notes, visit_date } = req.body;
-    const visit = await db.updateVisit(req.params.visitId, req.params.id, notes, visit_date);
+    const visit = await db.updateVisit(req.params.visitId, req.params.id, req.body);
     if (!visit) {
       return res.status(404).json({ error: 'Visit not found' });
     }
@@ -195,6 +223,78 @@ router.delete('/:id/visits/:visitId', async (req, res) => {
   } catch (err) {
     console.error('Visit delete error:', err);
     res.status(500).json({ error: 'Failed to delete visit' });
+  }
+});
+
+router.get('/:id/documents', async (req, res) => {
+  try {
+    const patient = await db.findPatientById(req.params.id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    const documents = await db.getDocuments(req.params.id);
+    res.json({ documents });
+  } catch (err) {
+    console.error('Documents fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch documents' });
+  }
+});
+
+router.post('/:id/documents', upload.single('file'), async (req, res) => {
+  try {
+    const patient = await db.findPatientById(req.params.id);
+    if (!patient) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const doc = await db.addDocument(
+      req.params.id,
+      req.file.filename,
+      req.file.originalname,
+      req.file.mimetype,
+      req.file.size
+    );
+    res.json({ success: true, document: doc });
+  } catch (err) {
+    console.error('Document upload error:', err);
+    res.status(500).json({ error: 'Failed to upload document' });
+  }
+});
+
+router.get('/:id/documents/:docId/download', async (req, res) => {
+  try {
+    const documents = await db.getDocuments(req.params.id);
+    const doc = documents.find(d => d.id === parseInt(req.params.docId));
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    const filePath = path.join(uploadsDir, doc.filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found on server' });
+    }
+    res.download(filePath, doc.original_name);
+  } catch (err) {
+    console.error('Document download error:', err);
+    res.status(500).json({ error: 'Failed to download document' });
+  }
+});
+
+router.delete('/:id/documents/:docId', async (req, res) => {
+  try {
+    const doc = await db.deleteDocument(req.params.docId, req.params.id);
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    const filePath = path.join(uploadsDir, doc.filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Document delete error:', err);
+    res.status(500).json({ error: 'Failed to delete document' });
   }
 });
 

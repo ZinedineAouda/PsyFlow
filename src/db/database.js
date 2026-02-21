@@ -113,7 +113,8 @@ async function getDashboardStats() {
   };
 }
 
-async function createVisit(patientId, notes, visitDate) {
+async function createVisit(patientId, data) {
+  const { notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation } = data;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -127,8 +128,11 @@ async function createVisit(patientId, notes, visitDate) {
     );
     const visitNumber = parseInt(countResult.rows[0].cnt) + 1;
     const result = await client.query(
-      'INSERT INTO visits (patient_id, visit_number, notes, visit_date) VALUES ($1, $2, $3, $4) RETURNING *',
-      [patientId, visitNumber, notes || null, visitDate || new Date().toISOString().split('T')[0]]
+      `INSERT INTO visits (patient_id, visit_number, notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [patientId, visitNumber, notes || null, visit_date || new Date().toISOString().split('T')[0],
+       consultation_type || null, source_demande || null, suffering_level || null,
+       hypothese_clinique || null, plan_evaluation || null]
     );
     await client.query('COMMIT');
     return result.rows[0];
@@ -140,10 +144,15 @@ async function createVisit(patientId, notes, visitDate) {
   }
 }
 
-async function updateVisit(visitId, patientId, notes, visitDate) {
+async function updateVisit(visitId, patientId, data) {
+  const { notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation } = data;
   const result = await pool.query(
-    'UPDATE visits SET notes = $1, visit_date = $2 WHERE id = $3 AND patient_id = $4 RETURNING *',
-    [notes || null, visitDate, visitId, patientId]
+    `UPDATE visits SET notes = $1, visit_date = $2, consultation_type = $3, source_demande = $4,
+     suffering_level = $5, hypothese_clinique = $6, plan_evaluation = $7
+     WHERE id = $8 AND patient_id = $9 RETURNING *`,
+    [notes || null, visit_date, consultation_type || null, source_demande || null,
+     suffering_level || null, hypothese_clinique || null, plan_evaluation || null,
+     visitId, patientId]
   );
   return result.rows[0];
 }
@@ -180,6 +189,30 @@ async function checkRfidExists(rfidUid) {
   return result.rows[0] || null;
 }
 
+async function addDocument(patientId, filename, originalName, mimeType, fileSize) {
+  const result = await pool.query(
+    'INSERT INTO documents (patient_id, filename, original_name, mime_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [patientId, filename, originalName, mimeType, fileSize]
+  );
+  return result.rows[0];
+}
+
+async function getDocuments(patientId) {
+  const result = await pool.query(
+    'SELECT * FROM documents WHERE patient_id = $1 ORDER BY created_at DESC',
+    [patientId]
+  );
+  return result.rows;
+}
+
+async function deleteDocument(docId, patientId) {
+  const result = await pool.query(
+    'DELETE FROM documents WHERE id = $1 AND patient_id = $2 RETURNING *',
+    [docId, patientId]
+  );
+  return result.rows[0];
+}
+
 module.exports = {
   pool,
   initDatabase,
@@ -199,4 +232,7 @@ module.exports = {
   deleteVisit,
   getVisits,
   getVisitCount,
+  addDocument,
+  getDocuments,
+  deleteDocument,
 };

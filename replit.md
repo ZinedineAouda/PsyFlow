@@ -57,14 +57,21 @@ public/
 - GET /api/patients - List/search patients
 - GET /api/patients/:id - Get single patient
 - GET /api/patients/:id/visits - Get patient visits
-- POST /api/patients/:id/visits - Create visit (with visit_date, notes)
+- POST /api/patients/:id/visits - Create visit (with visit_date, notes, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation)
 - PUT /api/patients/:id/visits/:visitId - Update visit
 - DELETE /api/patients/:id/visits/:visitId - Delete visit
+- GET /api/patients/:id/documents - Get patient documents
+- POST /api/patients/:id/documents - Upload document (multipart form)
+- GET /api/patients/:id/documents/:docId/download - Download document
+- DELETE /api/patients/:id/documents/:docId - Delete document
 
 ## Running
 - `node server.js` starts on port 5000
 
 ## Recent Changes
+- 2026-02-21: Added comprehensive consultation tracking — consultation type (Première consultation, Suivi, Référence, Évaluation scolaire, Rapport médical), referral source (Patient, Famille, Médecin, Institution), suffering level (1-5 scale), conditional clinical assessment section (hypothèse clinique, plan d'évaluation) for first consultations
+- 2026-02-21: Added document management — file upload/download/delete per patient, 10MB limit, supported types (.pdf, .doc, .docx, .jpg, .jpeg, .png, .txt), stored in uploads/ directory with database tracking
+- 2026-02-21: All new fields translated in English, Arabic, and French
 - 2026-02-19: Enhanced visit history — date picker for visits, inline edit/delete per visit with confirmation, translations in all 3 languages
 - 2026-02-18: Merged Read Card and Register Card into unified flow — scan a card to view or register
 - 2026-02-18: Added multi-language support (English, Arabic with RTL, French) with language selector in sidebar and full UI translation
