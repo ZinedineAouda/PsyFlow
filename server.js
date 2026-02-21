@@ -43,7 +43,7 @@ async function start() {
   try {
     await initDatabase();
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`RFID Patient Manager running on http://0.0.0.0:${PORT}`);
+      console.log(`PsyFlow running on http://0.0.0.0:${PORT}`);
     });
   } catch (err) {
     console.error('Failed to start server:', err);

@@ -2,7 +2,7 @@ const TRANSLATIONS = {
   en: {
     dir: 'ltr',
     lang: 'en',
-    brandName: 'PatientRFID',
+    brandName: 'PsyFlow',
     brandSub: 'Clinical Manager',
     navMain: 'Main',
     navDashboard: 'Dashboard',
@@ -185,7 +185,7 @@ const TRANSLATIONS = {
   ar: {
     dir: 'rtl',
     lang: 'ar',
-    brandName: 'PatientRFID',
+    brandName: 'PsyFlow',
     brandSub: 'مدير العيادة',
     navMain: 'الرئيسية',
     navDashboard: 'لوحة القيادة',
@@ -368,7 +368,7 @@ const TRANSLATIONS = {
   fr: {
     dir: 'ltr',
     lang: 'fr',
-    brandName: 'PatientRFID',
+    brandName: 'PsyFlow',
     brandSub: 'Gestionnaire Clinique',
     navMain: 'Principal',
     navDashboard: 'Tableau de bord',

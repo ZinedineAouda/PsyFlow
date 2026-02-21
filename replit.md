@@ -1,4 +1,4 @@
-# RFID Patient Manager
+# PsyFlow
 
 ## Overview
 A secure web application for psychologists to manage patient records using RFID cards. Each patient is linked to a unique RFID card UID. The application supports registration of new patients, scanning cards to view profiles, editing records, and managing patient data.
