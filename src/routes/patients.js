@@ -56,7 +56,7 @@ router.post('/scan', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const { rfid_uid, full_name, age, gender, diagnosis, notes, custom_fields } = req.body;
+    const { rfid_uid, full_name, age, gender, diagnosis, notes, custom_fields, first_consultation } = req.body;
     if (!rfid_uid || !rfid_uid.trim()) {
       return res.status(400).json({ error: 'RFID UID is required' });
     }
@@ -75,6 +75,18 @@ router.post('/register', async (req, res) => {
       rfid_uid: uid, full_name: full_name.trim(), age, gender, diagnosis, notes,
       custom_fields: custom_fields ? JSON.stringify(custom_fields) : '{}'
     });
+    if (first_consultation && first_consultation.consultation_type) {
+      const today = new Date().toISOString().split('T')[0];
+      await db.createVisit(patient.id, {
+        notes: '',
+        visit_date: today,
+        consultation_type: first_consultation.consultation_type,
+        source_demande: first_consultation.source_demande || null,
+        suffering_level: first_consultation.suffering_level || null,
+        hypothese_clinique: first_consultation.hypothese_clinique || null,
+        plan_evaluation: first_consultation.plan_evaluation || null,
+      });
+    }
     res.status(201).json({ success: true, patient });
   } catch (err) {
     console.error('Registration error:', err);

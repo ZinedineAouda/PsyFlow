@@ -167,6 +167,8 @@ const TRANSLATIONS = {
     sd_medecin: 'Physician',
     sd_institution: 'Institution',
 
+    firstConsultationInfo: 'First Consultation',
+
     documents: 'Documents',
     uploadDoc: 'Upload',
     deleteDoc: 'Delete Document',
@@ -350,6 +352,8 @@ const TRANSLATIONS = {
     sd_medecin: 'الطبيب',
     sd_institution: 'المؤسسة',
 
+    firstConsultationInfo: 'الاستشارة الأولى',
+
     documents: 'المستندات',
     uploadDoc: 'رفع',
     deleteDoc: 'حذف المستند',
@@ -532,6 +536,8 @@ const TRANSLATIONS = {
     sd_famille: 'Famille',
     sd_medecin: 'Médecin',
     sd_institution: 'Institution',
+
+    firstConsultationInfo: 'Première consultation',
 
     documents: 'Documents',
     uploadDoc: 'Téléverser',

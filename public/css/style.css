@@ -1398,6 +1398,21 @@ textarea {
   margin-inline-start: 4px;
 }
 
+.reg-consultation-section {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-inset);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.consultation-section-header h4 {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--primary);
+}
+
 .clinique-section {
   margin-top: var(--space-sm);
   padding: var(--space-md);

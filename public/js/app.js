@@ -284,6 +284,9 @@ function showRegistrationForm(uid) {
   showAlert(t('alertCardAvailable'), 'success');
   document.getElementById('reg-rfid-uid').value = uid.toUpperCase();
   document.getElementById('reg-form-container').classList.remove('hidden');
+  const regConsultFields = document.getElementById('reg-consultation-fields');
+  regConsultFields.innerHTML = renderVisitFormFields('reg', { consultation_type: 'premiere_consultation' });
+  bindConsultationTypeToggle(regConsultFields, 'reg');
   document.getElementById('reg-name').focus();
 }
 
@@ -735,6 +738,7 @@ async function registerPatient(e) {
   }
 
   const customFields = collectCustomFields('reg');
+  const consultData = collectVisitFormData(document.getElementById('reg-consultation-fields'), 'reg');
   const body = {
     rfid_uid: document.getElementById('reg-rfid-uid').value,
     full_name: document.getElementById('reg-name').value,
@@ -743,6 +747,7 @@ async function registerPatient(e) {
     diagnosis: document.getElementById('reg-diagnosis').value || null,
     notes: document.getElementById('reg-notes').value || null,
     custom_fields: customFields,
+    first_consultation: consultData,
   };
   try {
     await apiCall('/api/patients/register', 'POST', body);
@@ -751,6 +756,7 @@ async function registerPatient(e) {
     document.getElementById('read-rfid-input').value = '';
     document.getElementById('reg-form-container').classList.add('hidden');
     document.getElementById('reg-custom-fields').innerHTML = '';
+    document.getElementById('reg-consultation-fields').innerHTML = '';
     setScanState(ScanState.IDLE);
   } catch (err) {
     showAlert(err.message);
