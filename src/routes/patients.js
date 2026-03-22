@@ -5,7 +5,14 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../db/database');
 
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+let uploadsDir;
+if (process.versions && process.versions.electron) {
+  const { app } = require('electron');
+  uploadsDir = path.join(app.getPath('userData'), 'uploads');
+} else {
+  uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+}
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -307,6 +314,27 @@ router.delete('/:id/documents/:docId', async (req, res) => {
   } catch (err) {
     console.error('Document delete error:', err);
     res.status(500).json({ error: 'Failed to delete document' });
+  }
+});
+
+router.get('/:id/genogram', async (req, res) => {
+  try {
+    const genogram = await db.getGenogram(req.params.id);
+    res.json({ genogram });
+  } catch (err) {
+    console.error('Genogram fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch genogram' });
+  }
+});
+
+router.post('/:id/genogram', async (req, res) => {
+  try {
+    const { graph_data, image_data } = req.body;
+    await db.saveGenogram(req.params.id, graph_data, image_data);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Genogram save error:', err);
+    res.status(500).json({ error: 'Failed to save genogram' });
   }
 });
 

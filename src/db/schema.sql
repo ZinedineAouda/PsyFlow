@@ -44,6 +44,16 @@ CREATE TABLE IF NOT EXISTS documents (
 
 CREATE INDEX IF NOT EXISTS idx_documents_patient ON documents(patient_id);
 
+CREATE TABLE IF NOT EXISTS genograms (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    graph_data JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_genograms_patient ON genograms(patient_id);
+
 DO $$
 BEGIN
   IF NOT EXISTS (

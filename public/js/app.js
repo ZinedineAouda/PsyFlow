@@ -12,6 +12,7 @@ const PAGE_CONFIG = {
   dashboard: { title: 'Dashboard',       subtitle: "Overview of your clinic's patient records" },
   reading:   { title: 'Read Card',        subtitle: "Scan a patient's RFID card to view their profile" },
   manage:    { title: 'Manage Patients',  subtitle: 'Search, edit, and manage all patient records' },
+  genogram:  { title: 'Genogram',         subtitle: 'Create and manage clinical family genograms' },
 };
 
 /* --- THEME SYSTEM --- */
@@ -114,7 +115,23 @@ function switchMode(mode) {
     setScanState(ScanState.IDLE);
   } else if (mode === 'manage') {
     loadPatients();
+  } else if (mode === 'genogram') {
+    initGenogramWorkspace();
   }
+}
+
+let _genoMakerInstance = null;
+function initGenogramWorkspace() {
+  if (_genoMakerInstance) return; // already initialized
+  const tryInit = () => {
+    if (window._initGenogramMaker) {
+      _genoMakerInstance = window._initGenogramMaker('genogram-maker-root');
+      window._genoMakerInstance = _genoMakerInstance;
+    } else {
+      setTimeout(tryInit, 100);
+    }
+  };
+  tryInit();
 }
 
 /* --- DASHBOARD --- */
@@ -254,12 +271,13 @@ async function scanCard() {
     if (data.found) {
       setScanState(ScanState.FOUND);
       document.getElementById('reg-form-container').classList.add('hidden');
-      const [visitData, docData] = await Promise.all([
+      const [visitData, docData, genoData] = await Promise.all([
         apiCall(`/api/patients/${data.patient.id}/visits`),
-        apiCall(`/api/patients/${data.patient.id}/documents`)
+        apiCall(`/api/patients/${data.patient.id}/documents`),
+        apiCall(`/api/patients/${data.patient.id}/genogram`).catch(() => null)
       ]);
       container.innerHTML = renderPatientProfile(data.patient, visitData.visits, visitData.total_visits, docData.documents);
-      bindPatientViewEvents(container, data.patient.id);
+      bindPatientViewEvents(container, data.patient.id, genoData);
     } else if (data.deactivated) {
       setScanState(ScanState.NOT_FOUND);
       document.getElementById('reg-form-container').classList.add('hidden');
@@ -516,6 +534,23 @@ function renderPatientProfile(p, visits = [], totalVisits = 0, documents = []) {
           ${renderDocumentsList(documents, p.id)}
         </div>
       </div>
+      <div class="genogram-section" style="margin-top:32px; border-top: 1px solid var(--border-default);">
+        <div class="visit-section-header" style="padding: 24px;">
+          <h3 class="visit-section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Genogram
+          </h3>
+          <button class="btn btn-primary btn-sm" data-action="open-genogram" data-patient-id="${p.id}" style="box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Genogram
+          </button>
+        </div>
+        <div style="position:relative; width: 100%; height: 65vh; min-height: 500px; background: var(--bg-surface); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default);">
+          <div id="patient-genogram-preview" class="genogram-preview-area" style="width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; color: var(--text-secondary); overflow:hidden;">
+            Click 'Edit Genogram' to open the Genogram Maker.
+          </div>
+        </div>
+      </div>
       <div class="profile-footer">
         <span class="profile-meta">${t('profileRegistered')}: ${new Date(p.created_at).toLocaleDateString()} &middot; ${t('profileUpdated')}: ${new Date(p.updated_at).toLocaleDateString()}</span>
       </div>
@@ -659,7 +694,7 @@ function collectVisitFormData(container, prefix) {
   };
 }
 
-function bindPatientViewEvents(container, patientId) {
+function bindPatientViewEvents(container, patientId, genoData) {
   container.querySelectorAll('[data-action="edit"]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.id)));
   });
@@ -717,6 +752,54 @@ function bindPatientViewEvents(container, patientId) {
     });
   });
   bindDocEvents(container, patientId);
+
+  container.querySelectorAll('[data-action="open-genogram"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pId = btn.dataset.patientId;
+      
+      // Switch to genogram maker tab
+      switchMode('genogram');
+      document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+      document.querySelector('[data-page="genogram"]')?.classList.add('active');
+
+      /* Wait for maker to be initialized, then load data */
+      const waitAndLoad = async () => {
+        // Poll until maker is ready (initGenogramWorkspace is async)
+        let attempts = 0;
+        while (!window._genoMakerInstance && attempts < 50) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        
+        const maker = window._genoMakerInstance;
+        if (!maker) { console.error('Genogram maker not available'); return; }
+        
+        try {
+          const res = await apiCall(`/api/patients/${pId}/genogram`);
+          const gd = res.genogram && res.genogram.graph_data ? res.genogram.graph_data : {};
+          maker.loadGenogram({
+            graph_data: gd,
+            patient_id: pId
+          });
+        } catch(e) {
+          maker.loadGenogram({ graph_data: {}, patient_id: pId });
+        }
+      };
+      waitAndLoad();
+    });
+  });
+
+  // Show interactive read-only genogram viewer if genogram data exists
+  if (genoData && genoData.genogram && genoData.genogram.graph_data && window._renderReadonlyGenogram) {
+    const previewContainer = document.getElementById('patient-genogram-preview');
+    if (previewContainer) {
+      previewContainer.innerHTML = '';
+      previewContainer.style.padding = '0';
+      previewContainer.style.cursor = 'grab';
+      previewContainer.style.minHeight = '500px';
+      window._renderReadonlyGenogram('patient-genogram-preview', genoData.genogram.graph_data);
+    }
+  }
 }
 
 /* --- REGISTRATION --- */
@@ -799,9 +882,21 @@ async function loadPatients() {
       item.className = 'patient-list-item';
       item.setAttribute('tabindex', '0');
       item.setAttribute('role', 'button');
-      item.setAttribute('aria-label', `${t('edit')} ${p.full_name}`);
-      item.addEventListener('click', () => openEditModal(p.id));
-      item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(p.id); } });
+      item.setAttribute('aria-label', `View profile of ${p.full_name}`);
+      
+      const openFullPatientProfile = (patient) => {
+        switchMode('reading');
+        document.getElementById('read-rfid-input').value = patient.rfid_uid;
+        scanCard();
+      };
+
+      item.addEventListener('click', () => openFullPatientProfile(p));
+      item.addEventListener('keydown', (e) => { 
+        if (e.key === 'Enter' || e.key === ' ') { 
+          e.preventDefault(); 
+          openFullPatientProfile(p); 
+        } 
+      });
 
       const info = document.createElement('div');
       info.className = 'patient-info';
@@ -1049,8 +1144,17 @@ function escapeHtml(str) {
 /* --- EVENT BINDINGS --- */
 function initEventBindings() {
   document.querySelectorAll('.nav-item[data-mode]').forEach(btn => {
-    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
-    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchMode(btn.dataset.mode); } });
+    const handleNav = (e) => {
+      if (e && typeof e.preventDefault === 'function') {} // Just to prevent default if needed
+      const mode = btn.dataset.mode;
+      switchMode(mode);
+      // Clear Genogram Maker when clicked from Nav Bar to prevent showing past patients' data
+      if (mode === 'genogram' && window._genoMakerInstance) {
+        window._genoMakerInstance.loadGenogram({ graph_data: {}, patient_id: null });
+      }
+    };
+    btn.addEventListener('click', handleNav);
+    btn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNav(e); } });
   });
 
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);

@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/genogram.css">
 </head>
 <body>
 
@@ -42,6 +43,12 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
         <span class="nav-label" data-i18n="navManagePatients">Manage Patients</span>
+      </button>
+      <button class="nav-item" data-mode="genogram" tabindex="0" id="nav-genogram">
+        <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><line x1="10.5" y1="13" x2="6.5" y2="17"/><line x1="13.5" y1="13" x2="17.5" y2="17"/></svg>
+        </span>
+        <span class="nav-label">Genogram</span>
       </button>
     </nav>
 
@@ -285,6 +292,11 @@
           </div>
         </div>
       </section>
+
+      <!-- GENOGRAM MAKER MODE -->
+      <section id="mode-genogram" class="mode-section">
+        <div id="genogram-maker-root" style="height: calc(100vh - 140px); min-height: 600px;"></div>
+      </section>
     </div>
   </main>
 </div>
@@ -374,5 +386,9 @@
 
 <script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
+<script type="module">
+  import { initGenogramMaker } from '/js/genogram/main.js';
+  window._initGenogramMaker = initGenogramMaker;
+</script>
 </body>
 </html>

@@ -14,7 +14,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
@@ -42,13 +42,12 @@ app.get('/', (req, res) => {
 async function start() {
   try {
     await initDatabase();
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`PsyFlow running on http://0.0.0.0:${PORT}`);
-    });
   } catch (err) {
-    console.error('Failed to start server:', err);
-    process.exit(1);
+    console.warn('Database connection failed, starting frontend anyway:', err.message);
   }
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`PsyFlow running on http://localhost:${PORT}`);
+  });
 }
 
 start();

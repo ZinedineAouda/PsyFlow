@@ -1,220 +1,272 @@
-const { Pool } = require('pg');
+const fs = require('fs').promises;
+const path = require('path');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+let DB_FILE;
+if (process.versions && process.versions.electron) {
+  const { app } = require('electron');
+  DB_FILE = path.join(app.getPath('userData'), 'psyflow_db.json');
+} else {
+  DB_FILE = path.join(__dirname, '..', '..', 'psyflow_db.json');
+}
+
+// In-memory cache
+let db = {
+  patients: [],
+  visits: [],
+  documents: [],
+  genograms: []
+};
 
 async function initDatabase() {
-  const fs = require('fs');
-  const path = require('path');
-  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-  await pool.query(schema);
-  console.log('Database initialized successfully');
-}
-
-async function findPatientByRfid(rfidUid) {
-  const result = await pool.query(
-    'SELECT * FROM patients WHERE rfid_uid = $1 AND is_active = TRUE',
-    [rfidUid]
-  );
-  return result.rows[0] || null;
-}
-
-async function findPatientById(id) {
-  const result = await pool.query(
-    'SELECT * FROM patients WHERE id = $1',
-    [id]
-  );
-  return result.rows[0] || null;
-}
-
-async function createPatient(data) {
-  const { rfid_uid, full_name, age, gender, diagnosis, notes, custom_fields } = data;
-  const result = await pool.query(
-    `INSERT INTO patients (rfid_uid, full_name, age, gender, diagnosis, notes, custom_fields)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING *`,
-    [rfid_uid, full_name, age || null, gender || null, diagnosis || null, notes || null, custom_fields || '{}']
-  );
-  return result.rows[0];
-}
-
-async function updatePatient(id, data) {
-  const { full_name, age, gender, diagnosis, notes, custom_fields } = data;
-  const result = await pool.query(
-    `UPDATE patients SET
-       full_name = $1, age = $2, gender = $3, diagnosis = $4,
-       notes = $5, custom_fields = $6, updated_at = NOW()
-     WHERE id = $7
-     RETURNING *`,
-    [full_name, age || null, gender || null, diagnosis || null, notes || null, custom_fields || '{}', id]
-  );
-  return result.rows[0];
-}
-
-async function deactivatePatient(id) {
-  const result = await pool.query(
-    'UPDATE patients SET is_active = FALSE, updated_at = NOW() WHERE id = $1 RETURNING *',
-    [id]
-  );
-  return result.rows[0];
-}
-
-async function deletePatient(id) {
-  const result = await pool.query(
-    'DELETE FROM patients WHERE id = $1 RETURNING *',
-    [id]
-  );
-  return result.rows[0];
-}
-
-async function reactivatePatient(id) {
-  const result = await pool.query(
-    'UPDATE patients SET is_active = TRUE, updated_at = NOW() WHERE id = $1 RETURNING *',
-    [id]
-  );
-  return result.rows[0];
-}
-
-async function getAllPatients(includeInactive = false) {
-  const query = includeInactive
-    ? 'SELECT * FROM patients ORDER BY created_at DESC'
-    : 'SELECT * FROM patients WHERE is_active = TRUE ORDER BY created_at DESC';
-  const result = await pool.query(query);
-  return result.rows;
-}
-
-async function searchPatients(term) {
-  const result = await pool.query(
-    `SELECT * FROM patients WHERE is_active = TRUE AND
-     (full_name ILIKE $1 OR rfid_uid ILIKE $1 OR diagnosis ILIKE $1)
-     ORDER BY full_name`,
-    [`%${term}%`]
-  );
-  return result.rows;
-}
-
-async function getDashboardStats() {
-  const result = await pool.query(`
-    SELECT
-      COUNT(*) AS total_patients,
-      COUNT(*) FILTER (WHERE is_active = TRUE) AS active_cards,
-      COUNT(*) FILTER (WHERE is_active = FALSE) AS inactive_cards
-    FROM patients
-  `);
-  const lastScanned = await pool.query(
-    'SELECT rfid_uid, full_name, updated_at FROM patients ORDER BY updated_at DESC LIMIT 1'
-  );
-  return {
-    total_patients: parseInt(result.rows[0].total_patients),
-    active_cards: parseInt(result.rows[0].active_cards),
-    inactive_cards: parseInt(result.rows[0].inactive_cards),
-    last_scanned: lastScanned.rows[0] || null,
-  };
-}
-
-async function createVisit(patientId, data) {
-  const { notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation } = data;
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    await client.query(
-      'SELECT id FROM patients WHERE id = $1 FOR UPDATE',
-      [patientId]
-    );
-    const countResult = await client.query(
-      'SELECT COUNT(*) AS cnt FROM visits WHERE patient_id = $1',
-      [patientId]
-    );
-    const visitNumber = parseInt(countResult.rows[0].cnt) + 1;
-    const result = await client.query(
-      `INSERT INTO visits (patient_id, visit_number, notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [patientId, visitNumber, notes || null, visit_date || new Date().toISOString().split('T')[0],
-       consultation_type || null, source_demande || null, suffering_level || null,
-       hypothese_clinique || null, plan_evaluation || null]
-    );
-    await client.query('COMMIT');
-    return result.rows[0];
+    const data = await fs.readFile(DB_FILE, 'utf8');
+    db = JSON.parse(data);
+    console.log('JSON Database loaded successfully.');
   } catch (err) {
-    await client.query('ROLLBACK');
-    throw err;
-  } finally {
-    client.release();
+    console.log('No existing database found. Initializing a new fresh JSON database.');
+    await saveDb();
   }
 }
 
-async function updateVisit(visitId, patientId, data) {
-  const { notes, visit_date, consultation_type, source_demande, suffering_level, hypothese_clinique, plan_evaluation } = data;
-  const result = await pool.query(
-    `UPDATE visits SET notes = $1, visit_date = $2, consultation_type = $3, source_demande = $4,
-     suffering_level = $5, hypothese_clinique = $6, plan_evaluation = $7
-     WHERE id = $8 AND patient_id = $9 RETURNING *`,
-    [notes || null, visit_date, consultation_type || null, source_demande || null,
-     suffering_level || null, hypothese_clinique || null, plan_evaluation || null,
-     visitId, patientId]
-  );
-  return result.rows[0];
+async function saveDb() {
+  await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2));
 }
 
-async function deleteVisit(visitId, patientId) {
-  const result = await pool.query(
-    'DELETE FROM visits WHERE id = $1 AND patient_id = $2 RETURNING *',
-    [visitId, patientId]
-  );
-  return result.rows[0];
+function genId(table) {
+  if (!db[table] || db[table].length === 0) return 1;
+  return Math.max(...db[table].map(r => r.id)) + 1;
 }
 
-async function getVisits(patientId) {
-  const result = await pool.query(
-    'SELECT * FROM visits WHERE patient_id = $1 ORDER BY created_at DESC',
-    [patientId]
-  );
-  return result.rows;
+// === PATIENTS ===
+async function findPatientByRfid(rfidUid) {
+  return db.patients.find(p => p.rfid_uid === rfidUid && p.is_active) || null;
 }
 
-async function getVisitCount(patientId) {
-  const result = await pool.query(
-    'SELECT COUNT(*) AS count FROM visits WHERE patient_id = $1',
-    [patientId]
-  );
-  return parseInt(result.rows[0].count);
+async function findPatientById(id) {
+  return db.patients.find(p => p.id === parseInt(id)) || null;
+}
+
+async function createPatient(data) {
+  const newPatient = {
+    id: genId('patients'),
+    rfid_uid: data.rfid_uid,
+    full_name: data.full_name,
+    age: data.age || null,
+    gender: data.gender || null,
+    diagnosis: data.diagnosis || null,
+    notes: data.notes || null,
+    custom_fields: data.custom_fields || '{}',
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  db.patients.push(newPatient);
+  await saveDb();
+  return newPatient;
+}
+
+async function updatePatient(id, data) {
+  const p = await findPatientById(id);
+  if (!p) return null;
+  p.full_name = data.full_name;
+  p.age = data.age || null;
+  p.gender = data.gender || null;
+  p.diagnosis = data.diagnosis || null;
+  p.notes = data.notes || null;
+  p.custom_fields = data.custom_fields || '{}';
+  p.updated_at = new Date().toISOString();
+  await saveDb();
+  return p;
+}
+
+async function deactivatePatient(id) {
+  const p = await findPatientById(id);
+  if (p) {
+    p.is_active = false;
+    p.updated_at = new Date().toISOString();
+    await saveDb();
+  }
+  return p;
+}
+
+async function deletePatient(id) {
+  const idx = db.patients.findIndex(p => p.id === parseInt(id));
+  if (idx > -1) {
+    const deleted = db.patients.splice(idx, 1)[0];
+    db.visits = db.visits.filter(v => v.patient_id !== parseInt(id));
+    db.documents = db.documents.filter(d => d.patient_id !== parseInt(id));
+    db.genograms = db.genograms.filter(g => g.patient_id !== parseInt(id));
+    await saveDb();
+    return deleted;
+  }
+  return null;
+}
+
+async function reactivatePatient(id) {
+  const p = await findPatientById(id);
+  if (p) {
+    p.is_active = true;
+    p.updated_at = new Date().toISOString();
+    await saveDb();
+  }
+  return p;
+}
+
+async function getAllPatients(includeInactive = false) {
+  let list = db.patients;
+  if (!includeInactive) list = list.filter(p => p.is_active);
+  return list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+async function searchPatients(term) {
+  const low = term.toLowerCase();
+  return db.patients.filter(p => p.is_active && (
+    p.full_name.toLowerCase().includes(low) || 
+    p.rfid_uid.toLowerCase().includes(low) || 
+    (p.diagnosis && p.diagnosis.toLowerCase().includes(low))
+  )).sort((a,b) => a.full_name.localeCompare(b.full_name));
+}
+
+async function getDashboardStats() {
+  const total = db.patients.length;
+  const active = db.patients.filter(p => p.is_active).length;
+  const inactive = db.patients.filter(p => !p.is_active).length;
+  const lastScanned = db.patients.sort((a,b) => new Date(b.updated_at) - new Date(a.updated_at))[0] || null;
+  return { 
+    total_patients: total, 
+    active_cards: active, 
+    inactive_cards: inactive,
+    last_scanned: lastScanned ? { rfid_uid: lastScanned.rfid_uid, full_name: lastScanned.full_name, updated_at: lastScanned.updated_at } : null
+  };
 }
 
 async function checkRfidExists(rfidUid) {
-  const result = await pool.query(
-    'SELECT id, is_active FROM patients WHERE rfid_uid = $1',
-    [rfidUid]
-  );
-  return result.rows[0] || null;
+  const patient = db.patients.find(p => p.rfid_uid === rfidUid);
+  if (patient) {
+    return { id: patient.id, is_active: patient.is_active };
+  }
+  return null;
+}
+
+// === VISITS ===
+async function getVisits(patientId) {
+  const visits = db.visits.filter(v => v.patient_id === parseInt(patientId))
+    .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  return visits;
+}
+
+async function getVisitCount(patientId) {
+  return db.visits.filter(v => v.patient_id === parseInt(patientId)).length;
+}
+
+async function createVisit(patientId, data) {
+  const pVisits = await getVisits(patientId);
+  const visitNumber = pVisits.length + 1;
+  const newVisit = {
+    id: genId('visits'),
+    patient_id: parseInt(patientId),
+    visit_number: visitNumber,
+    visit_date: data.visit_date || new Date().toISOString().split('T')[0],
+    consultation_type: data.consultation_type || null,
+    source_demande: data.source_demande || null,
+    suffering_level: data.suffering_level || null,
+    hypothese_clinique: data.hypothese_clinique || null,
+    plan_evaluation: data.plan_evaluation || null,
+    notes: data.notes || '',
+    created_at: new Date().toISOString()
+  };
+  db.visits.push(newVisit);
+  await saveDb();
+  return newVisit;
+}
+
+async function updateVisit(visitId, patientId, data) {
+  const v = db.visits.find(x => x.id === parseInt(visitId) && x.patient_id === parseInt(patientId));
+  if (v) {
+    v.notes = data.notes || v.notes;
+    v.visit_date = data.visit_date || v.visit_date;
+    v.consultation_type = data.consultation_type || v.consultation_type;
+    v.source_demande = data.source_demande || v.source_demande;
+    v.suffering_level = data.suffering_level || v.suffering_level;
+    v.hypothese_clinique = data.hypothese_clinique || v.hypothese_clinique;
+    v.plan_evaluation = data.plan_evaluation || v.plan_evaluation;
+    await saveDb();
+  }
+  return v;
+}
+
+async function deleteVisit(visitId, patientId) {
+  const idx = db.visits.findIndex(x => x.id === parseInt(visitId) && x.patient_id === parseInt(patientId));
+  if (idx > -1) {
+    const deleted = db.visits.splice(idx, 1)[0];
+    await saveDb();
+    return deleted;
+  }
+  return null;
+}
+
+// === DOCUMENTS ===
+async function getDocuments(patientId) {
+  return db.documents.filter(d => d.patient_id === parseInt(patientId))
+    .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 async function addDocument(patientId, filename, originalName, mimeType, fileSize) {
-  const result = await pool.query(
-    'INSERT INTO documents (patient_id, filename, original_name, mime_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [patientId, filename, originalName, mimeType, fileSize]
-  );
-  return result.rows[0];
-}
-
-async function getDocuments(patientId) {
-  const result = await pool.query(
-    'SELECT * FROM documents WHERE patient_id = $1 ORDER BY created_at DESC',
-    [patientId]
-  );
-  return result.rows;
+  const newDoc = {
+    id: genId('documents'),
+    patient_id: parseInt(patientId),
+    filename: filename,
+    original_name: originalName,
+    mime_type: mimeType,
+    file_size: fileSize,
+    created_at: new Date().toISOString()
+  };
+  db.documents.push(newDoc);
+  await saveDb();
+  return newDoc;
 }
 
 async function deleteDocument(docId, patientId) {
-  const result = await pool.query(
-    'DELETE FROM documents WHERE id = $1 AND patient_id = $2 RETURNING *',
-    [docId, patientId]
-  );
-  return result.rows[0];
+  const idx = db.documents.findIndex(d => d.id === parseInt(docId) && d.patient_id === parseInt(patientId));
+  if (idx > -1) {
+    const deleted = db.documents.splice(idx, 1)[0];
+    await saveDb();
+    return deleted;
+  }
+  return null;
+}
+
+// === GENOGRAMS ===
+async function getGenogram(patientId) {
+  const res = db.genograms.filter(g => g.patient_id === parseInt(patientId))
+    .sort((a,b) => b.id - a.id)[0];
+  return res ? { graph_data: res.graph_data, image_data: res.image_data || null } : null;
+}
+
+async function saveGenogram(patientId, graphData, imageData) {
+  const existing = db.genograms.find(g => g.patient_id === parseInt(patientId));
+  if (existing) {
+    existing.graph_data = graphData;
+    existing.image_data = imageData || existing.image_data || null;
+    existing.updated_at = new Date().toISOString();
+    await saveDb();
+    return existing;
+  } else {
+    const newGeno = {
+      id: genId('genograms'),
+      patient_id: parseInt(patientId),
+      graph_data: graphData,
+      image_data: imageData || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    db.genograms.push(newGeno);
+    await saveDb();
+    return newGeno;
+  }
 }
 
 module.exports = {
-  pool,
   initDatabase,
   findPatientByRfid,
   findPatientById,
@@ -235,4 +287,6 @@ module.exports = {
   addDocument,
   getDocuments,
   deleteDocument,
+  getGenogram,
+  saveGenogram
 };

@@ -1,0 +1,399 @@
+/* ================================================================
+   PsyFlow — Genogram System Styles (v2)
+   Professional clinical-grade genogram UI
+   ================================================================ */
+
+/* ── Wrapper Layout ─────────────────────────────────────────────── */
+.geno-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 600px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  position: relative;
+  font-family: var(--font-family);
+}
+
+.geno-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────── */
+.geno-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-inset);
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.geno-toolbar-left,
+.geno-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.geno-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.geno-tool:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.geno-tool:active { transform: scale(0.96); }
+
+.geno-tool--export { color: #065f46; border-color: #6ee7b7; }
+
+.geno-divider {
+  display: block;
+  width: 1px;
+  height: 22px;
+  background: var(--border-default);
+  margin: 0 4px;
+}
+
+/* ── Left Symbol Panel ──────────────────────────────────────────── */
+.geno-symbols {
+  width: 90px;
+  min-width: 90px;
+  border-right: 1px solid var(--border-default);
+  background: var(--bg-inset);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.symbol-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.symbol-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border-radius: var(--radius-md);
+  cursor: grab;
+  transition: background 150ms, box-shadow 150ms;
+  user-select: none;
+  width: 100%;
+}
+.symbol-item:hover {
+  background: var(--bg-surface-hover);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.symbol-item:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+.symbol-item span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── SVG Canvas ─────────────────────────────────────────────────── */
+.geno-canvas {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  display: block;
+  cursor: grab;
+  background: var(--bg-app);
+  user-select: none;
+}
+.geno-canvas.panning { cursor: grabbing; }
+
+/* ── SVG Node Styles ─────────────────────────────────────────────── */
+.geno-canvas .node-shape {
+  fill: var(--bg-surface, #fff);
+  stroke: #475569;
+  stroke-width: 2;
+  transition: stroke 150ms, filter 150ms;
+}
+[data-theme="dark"] .geno-canvas .node-shape {
+  fill: #1e293b;
+  stroke: #94a3b8;
+}
+
+.geno-canvas .geno-node--male    .node-shape { stroke: #2563eb; }
+.geno-canvas .geno-node--female  .node-shape { stroke: #db2777; }
+
+.geno-canvas .geno-node.selected .node-shape {
+  stroke: #f59e0b;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px rgba(245,158,11,0.6));
+}
+
+.geno-canvas .is-patient {
+  stroke-width: 3.5 !important;
+  filter: drop-shadow(0 0 4px rgba(99,102,241,0.4));
+}
+
+.geno-canvas .node-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  fill: #374151;
+  pointer-events: none;
+}
+[data-theme="dark"] .geno-canvas .node-label { fill: #e2e8f0; }
+
+.geno-canvas .node-year {
+  font-family: 'Poppins', sans-serif;
+  font-size: 9px;
+  fill: #94a3b8;
+  pointer-events: none;
+}
+
+.geno-canvas .connect-dot {
+  fill: transparent;
+  stroke: transparent;
+  cursor: crosshair;
+  transition: fill 150ms, stroke 150ms;
+}
+.geno-canvas .geno-node:hover .connect-dot {
+  fill: #6366f1;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.geno-canvas .deceased-cross {
+  pointer-events: none;
+}
+[data-theme="dark"] .geno-canvas .deceased-cross {
+  stroke: #94a3b8;
+}
+
+.geno-canvas .edge-label {
+  font-size: 9px;
+  fill: #6b7280;
+  font-family: 'Poppins', sans-serif;
+  pointer-events: none;
+}
+
+.geno-canvas .couple-hit-line,
+.geno-canvas .child-hit-line {
+  cursor: pointer;
+  pointer-events: stroke; /* ensures the thick transparent line catches mouse events */
+}
+.geno-canvas .couple-hit-line:hover + path,
+.geno-canvas .geno-edge--couple:hover path,
+.geno-canvas .child-hit-line:hover + path,
+.geno-canvas .geno-edge--child:hover path {
+  filter: drop-shadow(0 0 4px rgba(99,102,241,0.5));
+}
+
+.geno-canvas .geno-edge--emotional { cursor: pointer; }
+.geno-canvas .geno-edge--emotional path { opacity: 0.75; }
+.geno-canvas .geno-edge--emotional:hover path { opacity: 1; }
+
+/* Selected node/edge styles */
+.geno-canvas .geno-edge.selected path {
+  filter: drop-shadow(0 0 8px rgba(245,158,11,0.8));
+  stroke: #f59e0b !important;
+}
+
+/* ── Right Properties Panel ─────────────────────────────────────── */
+.geno-props-panel {
+  width: 230px;
+  min-width: 200px;
+  border-left: 1px solid var(--border-default);
+  padding: 14px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.props-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.props-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  gap: 3px;
+}
+
+.props-input {
+  padding: 6px 9px;
+  border: 1.5px solid var(--border-default);
+  border-radius: 6px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-inset);
+  outline: none;
+  transition: border-color 150ms;
+  width: 100%;
+}
+.props-input:focus { border-color: var(--primary); }
+
+.props-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.props-check input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
+
+.props-empty {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  text-align: center;
+}
+.props-empty p {
+  font-size: 12px; color: var(--text-muted); line-height: 1.7;
+}
+
+/* ── Relation Picker Modal ─────────────────────────────────────── */
+.geno-modal {
+  position: fixed; inset: 0;
+  background: var(--overlay, rgba(0,0,0,0.5));
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  animation: genoFadeIn 150ms ease;
+}
+.geno-modal.hidden { display: none; }
+
+.geno-modal-box {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: var(--shadow-xl, 0 20px 60px rgba(0,0,0,0.3));
+  width: 720px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 0 0 16px;
+}
+
+.geno-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-default);
+  position: sticky; top: 0;
+  background: var(--bg-surface);
+  z-index: 2;
+}
+.geno-modal-header h3 {
+  font-size: 15px; font-weight: 700; color: var(--text-primary);
+}
+.geno-modal-close {
+  background: none; border: none; font-size: 18px; cursor: pointer;
+  color: var(--text-muted); line-height: 1; padding: 4px;
+  border-radius: 6px; transition: background 150ms;
+}
+.geno-modal-close:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+
+.geno-modal-section { padding: 12px 20px 4px; }
+.geno-modal-tabs { padding-top: 4px; }
+
+.modal-cat-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+}
+
+.rel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rel-btn {
+  padding: 6px 12px;
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 150ms;
+  text-align: center;
+}
+.rel-btn:hover { background: var(--bg-surface-hover); border-color: var(--primary, #6366f1); }
+
+/* Preview card style buttons */
+.rel-btn--preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px 6px;
+  min-height: 58px;
+}
+.rel-btn--preview:hover {
+  border-color: var(--primary, #6366f1);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+  transform: translateY(-1px);
+}
+.rel-btn--emo:hover { border-color: #7c3aed; box-shadow: 0 2px 8px rgba(124,58,237,0.15); }
+.rel-btn--child:hover { border-color: #059669; box-shadow: 0 2px 8px rgba(5,150,105,0.15); }
+
+.rel-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+}
+.rel-preview svg { display: block; }
+
+.rel-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ── Animations ─────────────────────────────────────────────────── */
+@keyframes genoFadeIn { from { opacity: 0; } to { opacity: 1; } }
