@@ -18,37 +18,37 @@ function svgEl(tag, attrs = {}) {
    COUPLE STYLES — 20 types
    ════════════════════════════════════════════════════════════ */
 export const COUPLE_STYLES = {
-  marriage:                { stroke:'#374151', dash:'',          w:2.5, label:'Marriage' },
-  engagement:              { stroke:'#2563eb', dash:'8,5',       w:2,   label:'Engagement' },
-  legal_cohabitation:      { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'Legal Cohabitation',           house:true },
-  cohabitation:            { stroke:'#16a34a', dash:'2,3',       w:2,   label:'Cohabitation',                 house:true },
-  casual_relationship:     { stroke:'#9ca3af', dash:'2,4',       w:1.5, label:'Casual Relationship' },
-  divorce:                 { stroke:'#ef4444', dash:'',          w:2.5, label:'Divorce',                      slashes:2 },
-  engagement_cohabitation: { stroke:'#2563eb', dash:'8,5',       w:2,   label:'Engagement & Cohabitation',    house:true },
-  legal_cohab_sep_fact:    { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'Legal Cohab. & Sep. in Fact',  house:true, slashes:1 },
-  cohabitation_separation: { stroke:'#16a34a', dash:'2,3',       w:2,   label:'Cohabitation & Separation',    house:true, slashes:1 },
-  casual_relationship_sep: { stroke:'#9ca3af', dash:'2,4',       w:1.5, label:'Casual Rel. & Separation',     slashes:1 },
-  separation_fact:         { stroke:'#374151', dash:'',          w:2.5, label:'Separation in Fact',            slashes:1 },
-  engagement_separation:   { stroke:'#2563eb', dash:'8,5',       w:2,   label:'Engagement & Separation',      slashes:1 },
-  legal_cohab_legal_sep:   { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'Legal Cohab. & Legal Sep.',    house:true, slashes:2 },
-  nonsentimental_cohab:    { stroke:'#9ca3af', dash:'4,3,1,3',   w:2,   label:'Non-sentimental Cohab.',       house:true },
-  temporary_relation:      { stroke:'#9ca3af', dash:'6,3,1,3',   w:1.5, label:'Temporary Relation' },
-  legal_separation:        { stroke:'#374151', dash:'',          w:2.5, label:'Legal Separation',              slashes:2 },
-  nullity:                 { stroke:'#ef4444', dash:'',          w:2.5, label:'Nullity',                       slashes:3 },
-  long_term_relationship:  { stroke:'#2563eb', dash:'12,4',      w:2,   label:'Long-term Relationship' },
-  nonsentimental_cohab_sep:{ stroke:'#9ca3af', dash:'4,3,1,3',   w:2,   label:'Non-sent. Cohab. & Sep.',      house:true, slashes:1 },
-  love_affair:             { stroke:'#f472b6', dash:'3,4',       w:1.5, label:'Love Affair' },
+  marriage:                { stroke:'#374151', dash:'',          w:2.5, label:'gr_marriage' },
+  engagement:              { stroke:'#2563eb', dash:'8,5',       w:2,   label:'gr_engagement' },
+  legal_cohabitation:      { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'gr_legal_cohabitation',        house:true },
+  cohabitation:            { stroke:'#16a34a', dash:'2,3',       w:2,   label:'gr_cohabitation',              house:true },
+  casual_relationship:     { stroke:'#9ca3af', dash:'2,4',       w:1.5, label:'gr_casual_relationship' },
+  divorce:                 { stroke:'#ef4444', dash:'',          w:2.5, label:'gr_divorce',                   slashes:2 },
+  engagement_cohabitation: { stroke:'#2563eb', dash:'8,5',       w:2,   label:'gr_engagement_cohabitation',   house:true },
+  legal_cohab_sep_fact:    { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'gr_legal_cohab_sep_fact',     house:true, slashes:1 },
+  cohabitation_separation: { stroke:'#16a34a', dash:'2,3',       w:2,   label:'gr_cohab_sep',                 house:true, slashes:1 },
+  casual_relationship_sep: { stroke:'#9ca3af', dash:'2,4',       w:1.5, label:'gr_casual_rel_sep',            slashes:1 },
+  separation_fact:         { stroke:'#374151', dash:'',          w:2.5, label:'gr_sep_fact',                  slashes:1 },
+  engagement_separation:   { stroke:'#2563eb', dash:'8,5',       w:2,   label:'gr_engagement_sep',            slashes:1 },
+  legal_cohab_legal_sep:   { stroke:'#2563eb', dash:'4,3,1,3',   w:2,   label:'gr_legal_cohab_sep',           house:true, slashes:2 },
+  nonsentimental_cohab:    { stroke:'#9ca3af', dash:'4,3,1,3',   w:2,   label:'gr_non_sent_cohab',            house:true },
+  temporary_relation:      { stroke:'#9ca3af', dash:'6,3,1,3',   w:1.5, label:'gr_temporary_relation' },
+  legal_separation:        { stroke:'#374151', dash:'',          w:2.5, label:'gr_legal_separation',           slashes:2 },
+  nullity:                 { stroke:'#ef4444', dash:'',          w:2.5, label:'gr_nullity',                    slashes:3 },
+  long_term_relationship:  { stroke:'#2563eb', dash:'12,4',      w:2,   label:'gr_long_term_rel' },
+  nonsentimental_cohab_sep:{ stroke:'#9ca3af', dash:'4,3,1,3',   w:2,   label:'gr_non_sent_cohab_sep',        house:true, slashes:1 },
+  love_affair:             { stroke:'#f472b6', dash:'3,4',       w:1.5, label:'gr_love_affair' },
 };
 
 /* ════════════════════════════════════════════════════════════
    CHILD STYLES — 5 types
    ════════════════════════════════════════════════════════════ */
 export const CHILD_STYLES = {
-  biological:    { stroke:'#6b7280', dash:'',      w:2,   label:'Biological Child' },
-  adopted:       { stroke:'#2563eb', dash:'10,6',  w:2.5, label:'Adopted Child' },
-  foster:        { stroke:'#16a34a', dash:'3,4',   w:2.5, label:'Foster Child' },
-  multicultural: { stroke:'#6b7280', dash:'',      w:2,   label:'Multicultural',  wave:true },
-  immigration:   { stroke:'#6b7280', dash:'',      w:2,   label:'Immigration',    wave:true, arrow:true },
+  biological:    { stroke:'#6b7280', dash:'',      w:2,   label:'gr_bio_child' },
+  adopted:       { stroke:'#2563eb', dash:'10,6',  w:2.5, label:'gr_adopted_child' },
+  foster:        { stroke:'#16a34a', dash:'3,4',   w:2.5, label:'gr_foster_child' },
+  multicultural: { stroke:'#6b7280', dash:'',      w:2,   label:'gr_multicultural',  wave:true },
+  immigration:   { stroke:'#6b7280', dash:'',      w:2,   label:'gr_immigration',    wave:true, arrow:true },
 };
 
 /* ════════════════════════════════════════════════════════════
@@ -56,36 +56,36 @@ export const CHILD_STYLES = {
    Colors: green=positive, red=negative, blue=abuse, gray=neutral
    ════════════════════════════════════════════════════════════ */
 export const EMOTIONAL_STYLES = {
-  indifferent:      { stroke:'#9ca3af', dash:'2,4',   w:1.5, label:'Indifferent' },
-  harmony:          { stroke:'#16a34a', dash:'',      w:2.5, label:'Harmony' },
-  hostile:          { stroke:'#ef4444', dash:'',      w:2,   label:'Hostile',           zigzag:true },
-  violence:         { stroke:'#ef4444', dash:'',      w:3,   label:'Violence',          zigzag:true, dense:true },
-  abuse:            { stroke:'#2563eb', dash:'',      w:2,   label:'Abuse',             wavy:true },
-  manipulative:     { stroke:'#ef4444', dash:'',      w:2,   label:'Manipulative',      arrow:true, xmark:true },
-  distant_poor:     { stroke:'#9ca3af', dash:'6,5',   w:1.5, label:'Distant/Poor' },
-  close:            { stroke:'#16a34a', dash:'',      w:2,   label:'Close',             lines:2 },
-  distant_hostile:  { stroke:'#ef4444', dash:'6,4',   w:2,   label:'Distant-Hostile',   zigzag:true },
-  distant_violence: { stroke:'#ef4444', dash:'6,4',   w:3,   label:'Distant-Violence',  zigzag:true, dense:true },
-  physical_abuse:   { stroke:'#2563eb', dash:'',      w:3,   label:'Physical Abuse',    wavy:true },
-  controlling:      { stroke:'#ef4444', dash:'',      w:2,   label:'Controlling',       arrow:true, xbox:true },
-  cutoff:           { stroke:'#ef4444', dash:'6,4',   w:2,   label:'Cutoff',            bars:true },
-  very_close:       { stroke:'#16a34a', dash:'',      w:2,   label:'Very Close',        lines:3 },
-  close_hostile:    { stroke:'#ef4444', dash:'',      w:2,   label:'Close-Hostile',     lines:2, zigzag:true },
-  close_violence:   { stroke:'#ef4444', dash:'',      w:3,   label:'Close-Violence',    lines:2, zigzag:true, dense:true },
-  emotional_abuse:  { stroke:'#2563eb', dash:'',      w:2,   label:'Emotional Abuse',   wavy:true },
-  focused_on:       { stroke:'#6b7280', dash:'',      w:2,   label:'Focused On',        arrow:true },
-  conflict:         { stroke:'#ef4444', dash:'4,4',   w:2.5, label:'Conflict',          lines:2 },
-  love:             { stroke:'#16a34a', dash:'',      w:2,   label:'Love',              circle:true },
-  fused_hostile:    { stroke:'#ef4444', dash:'',      w:3,   label:'Fused-Hostile',     zigzag:true },
-  fused_violence:   { stroke:'#ef4444', dash:'',      w:3.5, label:'Fused-Violence',    zigzag:true, dense:true },
-  sexual_abuse:     { stroke:'#2563eb', dash:'',      w:3,   label:'Sexual Abuse',      wavy:true, dense:true },
-  fan_admirer:      { stroke:'#6b7280', dash:'',      w:2,   label:'Fan/Admirer',       circle:true, arrow:true },
-  hate:             { stroke:'#ef4444', dash:'5,3',   w:3,   label:'Hate' },
-  in_love:          { stroke:'#16a34a', dash:'',      w:2,   label:'In Love',           circle:true, double_circle:true },
-  distrust:         { stroke:'#ef4444', dash:'',      w:2,   label:'Distrust',          bars:true },
-  fused:            { stroke:'#ef4444', dash:'',      w:4,   label:'Fused' },
-  neglect_abuse:    { stroke:'#2563eb', dash:'6,4',   w:2,   label:'Neglect (Abuse)',    arrow:true },
-  limerence:        { stroke:'#6b7280', dash:'',      w:2,   label:'Limerence',         circle:true, double_circle:true, arrow:true },
+  indifferent:      { stroke:'#9ca3af', dash:'2,4',   w:1.5, label:'gr_indifferent' },
+  harmony:          { stroke:'#16a34a', dash:'',      w:2.5, label:'gr_harmony' },
+  hostile:          { stroke:'#ef4444', dash:'',      w:2,   label:'gr_hostile' },
+  violence:         { stroke:'#ef4444', dash:'',      w:3,   label:'gr_violence' },
+  abuse:            { stroke:'#2563eb', dash:'',      w:2,   label:'gr_abuse' },
+  manipulative:     { stroke:'#ef4444', dash:'',      w:2,   label:'gr_manipulative' },
+  distant_poor:     { stroke:'#9ca3af', dash:'6,5',   w:1.5, label:'gr_distant_poor' },
+  close:            { stroke:'#16a34a', dash:'',      w:2,   label:'gr_close' },
+  distant_hostile:  { stroke:'#ef4444', dash:'6,4',   w:2,   label:'gr_distant_hostile' },
+  distant_violence: { stroke:'#ef4444', dash:'6,4',   w:3,   label:'gr_distant_violence' },
+  physical_abuse:   { stroke:'#2563eb', dash:'',      w:3,   label:'gr_physical_abuse' },
+  controlling:      { stroke:'#ef4444', dash:'',      w:2,   label:'gr_controlling' },
+  cutoff:           { stroke:'#ef4444', dash:'6,4',   w:2,   label:'gr_cutoff' },
+  very_close:       { stroke:'#16a34a', dash:'',      w:2,   label:'gr_very_close' },
+  close_hostile:    { stroke:'#ef4444', dash:'',      w:2,   label:'gr_close_hostile' },
+  close_violence:   { stroke:'#ef4444', dash:'',      w:3,   label:'gr_close_violence' },
+  emotional_abuse:  { stroke:'#2563eb', dash:'',      w:2,   label:'gr_emotional_abuse' },
+  focused_on:       { stroke:'#6b7280', dash:'',      w:2,   label:'gr_focused_on' },
+  conflict:         { stroke:'#ef4444', dash:'4,4',   w:2.5, label:'gr_conflict' },
+  love:             { stroke:'#16a34a', dash:'',      w:2,   label:'gr_love' },
+  fused_hostile:    { stroke:'#ef4444', dash:'',      w:3,   label:'gr_fused_hostile' },
+  fused_violence:   { stroke:'#ef4444', dash:'',      w:3.5, label:'gr_fused_violence' },
+  sexual_abuse:     { stroke:'#2563eb', dash:'',      w:3,   label:'gr_sexual_abuse' },
+  fan_admirer:      { stroke:'#6b7280', dash:'',      w:2,   label:'gr_fan_admirer' },
+  hate:             { stroke:'#ef4444', dash:'5,3',   w:3,   label:'gr_hate' },
+  in_love:          { stroke:'#16a34a', dash:'',      w:2,   label:'gr_in_love' },
+  distrust:         { stroke:'#ef4444', dash:'',      w:2,   label:'gr_distrust' },
+  fused:            { stroke:'#ef4444', dash:'',      w:4,   label:'gr_fused' },
+  neglect_abuse:    { stroke:'#2563eb', dash:'6,4',   w:2,   label:'gr_neglect' },
+  limerence:        { stroke:'#6b7280', dash:'',      w:2,   label:'gr_limerence' },
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -476,7 +476,7 @@ export function createEmotionalEdge(el, src, tgt) {
   // Label
   const label = svgEl('text',{x:mx+nx*14,y:my+ny*14,'text-anchor':'middle'});
   label.classList.add('edge-label');
-  label.textContent = s.label;
+  label.textContent = window.t ? window.t(s.label) : s.label;
   g.appendChild(label);
   return g;
 }

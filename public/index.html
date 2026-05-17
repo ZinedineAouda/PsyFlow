@@ -11,7 +11,14 @@
   <link rel="stylesheet" href="/css/genogram.css">
 </head>
 <body>
-
+<script>
+window.onerror = function(message, source, lineno, colno, error) {
+  var errDiv = document.createElement('div');
+  errDiv.style = 'position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:99999;padding:10px;white-space:pre-wrap;';
+  errDiv.innerText = 'ERR: ' + message + '\nLine: ' + lineno + '\n' + (error ? error.stack : '');
+  document.body.appendChild(errDiv);
+};
+</script>
 <div class="app-layout">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -48,7 +55,7 @@
         <span class="nav-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><line x1="10.5" y1="13" x2="6.5" y2="17"/><line x1="13.5" y1="13" x2="17.5" y2="17"/></svg>
         </span>
-        <span class="nav-label">Genogram</span>
+        <span class="nav-label" data-i18n="navGenogram">Genogram</span>
       </button>
     </nav>
 

@@ -62,8 +62,9 @@ export class GenogramMaker {
   }
 
   /* ── Full render ────────────────────────────────────────────── */
-  _render() {
+  _render(skipProps = false) {
     const layer = this._layer;
+    if (!layer) return;
     layer.innerHTML = '';
 
     // Edge layer (behind nodes)
@@ -150,9 +151,9 @@ export class GenogramMaker {
     }
 
     this._applyTransform();
-    this._renderPropsPanel();
+    if (!skipProps) this._renderPropsPanel();
     if (this._selected) {
-      this._select(this._selected);
+      this._select(this._selected, skipProps);
     }
   }
 
@@ -348,7 +349,7 @@ export class GenogramMaker {
   }
 
   /* ── Selection ──────────────────────────────────────────────── */
-  _select(id) {
+  _select(id, skipProps = false) {
     this._selected = id;
     this._svg.querySelectorAll('.geno-node, .geno-edge').forEach(n => n.classList.remove('selected'));
     
@@ -362,7 +363,7 @@ export class GenogramMaker {
     if (!el) el = this._svg.querySelector(`[data-emo-id="${id}"]`);
     
     if (el) el.classList.add('selected');
-    this._renderPropsPanel();
+    if (!skipProps) this._renderPropsPanel();
   }
 
   _deselectAll() {
@@ -460,7 +461,7 @@ export class GenogramMaker {
   async _handleSave() {
     if (this._linkedPatientId) {
       await this._saveToBackend(this._linkedPatientId);
-      alert('Genogram successfully updated for the selected patient!');
+      alert(window.t ? window.t('gnSaveSuccess') : 'Genogram successfully updated for the selected patient!');
       return;
     }
 
@@ -472,9 +473,9 @@ export class GenogramMaker {
       const res = await fetch('/api/patients?include_inactive=false');
       const data = await res.json();
       if (!data.patients || data.patients.length === 0) {
-        select.innerHTML = '<option value="">(No active patients found)</option>';
+        select.innerHTML = `<option value="">${window.t ? window.t('gnNoActivePatients') : '(No active patients found)'}</option>`;
       } else {
-        select.innerHTML = '<option value="">-- Choose a patient --</option>' +
+        select.innerHTML = `<option value="">${window.t ? window.t('gnChoosePatient') : '-- Choose a patient --'}</option>` +
           data.patients.map(p => `<option value="${p.id}">${this._esc(p.full_name)} (${this._esc(p.rfid_uid)})</option>`).join('');
       }
     } catch (err) {
@@ -487,7 +488,7 @@ export class GenogramMaker {
 
   async _handleLoad() {
     // If there are unsaved changes, prompt the user
-    if (this._dirty && confirm("You have unsaved changes. Loading a new genogram will overwrite your current progress. Continue?") === false) {
+    if (this._dirty && confirm(window.t ? window.t('gnUnsavedChanges') : "You have unsaved changes...") === false) {
       return;
     }
 
@@ -499,9 +500,9 @@ export class GenogramMaker {
       const res = await fetch('/api/patients?include_inactive=false');
       const data = await res.json();
       if (!data.patients || data.patients.length === 0) {
-        select.innerHTML = '<option value="">(No active patients found)</option>';
+        select.innerHTML = `<option value="">${window.t ? window.t('gnNoActivePatients') : '(No active patients found)'}</option>`;
       } else {
-        select.innerHTML = '<option value="">-- Choose a patient --</option>' +
+        select.innerHTML = `<option value="">${window.t ? window.t('gnChoosePatient') : '-- Choose a patient --'}</option>` +
           data.patients.map(p => `<option value="${p.id}">${this._esc(p.full_name)} (${this._esc(p.rfid_uid)})</option>`).join('');
       }
     } catch (err) {
@@ -612,7 +613,7 @@ export class GenogramMaker {
         }
       }
       this._dirty = true;
-      this._render();
+      this._render(true); // Skip props re-render to maintain focus/cursor
     };
 
     this._propsPanel.addEventListener('input', handler);
@@ -624,7 +625,7 @@ export class GenogramMaker {
     if (!panel) return;
 
     if (!this._selected) {
-      panel.innerHTML = `<div class="props-empty"><p>Select a person or relationship<br>to edit properties.</p></div>`;
+      panel.innerHTML = `<div class="props-empty"><p>${window.t ? window.t('gnSelectEmpty') : 'Select a person<br>to edit properties.'}</p></div>`;
       return;
     }
 
@@ -632,82 +633,85 @@ export class GenogramMaker {
     if (this.model.people.has(this._selected)) {
       const person = this.model.people.get(this._selected);
       panel.innerHTML = `
-        <h4 class="props-title">Person Properties</h4>
-        <label class="props-label">Name
-          <input class="props-input" type="text" data-field="name" value="${this._esc(person.name)}" placeholder="Full name…">
+        <h4 class="props-title">${window.t ? window.t('gnPersonProps') : 'Person Properties'}</h4>
+        <label class="props-label">${window.t ? window.t('gnName') : 'Name'}
+          <input class="props-input" type="text" data-field="name" value="${this._esc(person.name)}" placeholder="${window.t ? window.t('fullName') : 'Full name…'}">
         </label>
-        <label class="props-label">Gender
+        <label class="props-label">${window.t ? window.t('gnGender') : 'Gender'}
           <select class="props-input" data-field="gender">
-            <option value="male"   ${person.gender==='male'?'selected':''}>Male (□)</option>
-            <option value="female" ${person.gender==='female'?'selected':''}>Female (○)</option>
+            <option value="male"   ${person.gender==='male'?'selected':''}>${window.t ? window.t('gnMaleOption') : 'Male (□)'}</option>
+            <option value="female" ${person.gender==='female'?'selected':''}>${window.t ? window.t('gnFemaleOption') : 'Female (○)'}</option>
           </select>
         </label>
-        <label class="props-label">Date of Birth
+        <label class="props-label">${window.t ? window.t('gnDOB') : 'Date of Birth'}
           <input class="props-input" type="date" data-field="dob" value="${person.dob || ''}">
         </label>
         <label class="props-check">
           <input type="checkbox" data-field="isDeceased" ${person.isDeceased?'checked':''}>
-          Deceased
+          ${window.t ? window.t('gnDeceased') : 'Deceased'}
         </label>
         ${person.isDeceased ? `
-          <label class="props-label">Date of Death
+          <label class="props-label">${window.t ? window.t('gnDOD') : 'Date of Death'}
             <input class="props-input" type="date" data-field="dod" value="${person.dod || ''}">
           </label>
         ` : ''}
         <label class="props-check">
           <input type="checkbox" data-field="isIndexPatient" ${person.isIndexPatient?'checked':''}>
-          Index Patient
+          ${window.t ? window.t('gnIndexPatient') : 'Index Patient'}
         </label>
         <button class="btn btn-sm btn-danger" id="geno-btn-delete-node" style="margin-top:12px;width:100%">
-          🗑 Delete Person
+          🗑 ${window.t ? window.t('gnDeletePerson') : 'Delete Person'}
         </button>`;
     } 
     // Is it a Couple Link?
     else if (this.model.coupleLinks.has(this._selected)) {
       const cl = this.model.coupleLinks.get(this._selected);
-      const currentStyle = COUPLE_STYLES[cl.relationType] || { label: cl.relationType };
+      const styleInfo = COUPLE_STYLES[cl.relationType] || { label: cl.relationType };
+      const labelText = window.t ? window.t(styleInfo.label) : styleInfo.label;
       panel.innerHTML = `
-        <h4 class="props-title">Couple Relationship</h4>
-        <div class="props-label">Current Style
-          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${currentStyle.label}</div>
+        <h4 class="props-title">${window.t ? window.t('gnCoupleRel') : 'Couple Relationship'}</h4>
+        <div class="props-label">${window.t ? window.t('gnCurrentStyle') : 'Current Style'}
+          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${labelText}</div>
         </div>
         <button class="btn btn-sm btn-primary" id="geno-btn-change-style" style="width:100%">
-          ✏️ Change Style Visually
+          ✏️ ${window.t ? window.t('gnChangeStyle') : 'Change Style Visually'}
         </button>
         <button class="btn btn-sm btn-danger" id="geno-btn-delete-node" style="margin-top:12px;width:100%">
-          🗑 Delete Relationship
+          🗑 ${window.t ? window.t('gnDeleteRel') : 'Delete Relationship'}
         </button>`;
     }
     // Is it a Child Link?
     else if (this.model.childLinks.find(c => c.id === this._selected)) {
       const cl = this.model.childLinks.find(c => c.id === this._selected);
-      const currentStyle = CHILD_STYLES[cl.childType] || { label: cl.childType };
+      const styleInfo = CHILD_STYLES[cl.childType] || { label: cl.childType };
+      const labelText = window.t ? window.t(styleInfo.label) : styleInfo.label;
       panel.innerHTML = `
-        <h4 class="props-title">Child Link</h4>
-        <div class="props-label">Current Style
-          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${currentStyle.label}</div>
+        <h4 class="props-title">${window.t ? window.t('gnChildLink') : 'Child Link'}</h4>
+        <div class="props-label">${window.t ? window.t('gnCurrentStyle') : 'Current Style'}
+          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${labelText}</div>
         </div>
         <button class="btn btn-sm btn-primary" id="geno-btn-change-style" style="width:100%">
-          ✏️ Change Style Visually
+          ✏️ ${window.t ? window.t('gnChangeStyle') : 'Change Style Visually'}
         </button>
         <button class="btn btn-sm btn-danger" id="geno-btn-delete-node" style="margin-top:12px;width:100%">
-          🗑 Delete Child Link
+          🗑 ${window.t ? window.t('gnDeleteChildLk') : 'Delete Child Link'}
         </button>`;
     }
     // Is it an Emotional Link?
     else if (this.model.emotionalLinks.find(e => e.id === this._selected)) {
       const el = this.model.emotionalLinks.find(e => e.id === this._selected);
-      const currentStyle = EMOTIONAL_STYLES[el.relationType] || { label: el.relationType };
+      const styleInfo = EMOTIONAL_STYLES[el.relationType] || { label: el.relationType };
+      const labelText = window.t ? window.t(styleInfo.label) : styleInfo.label;
       panel.innerHTML = `
-        <h4 class="props-title">Emotional Relationship</h4>
-        <div class="props-label">Current Style
-          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${currentStyle.label}</div>
+        <h4 class="props-title">${window.t ? window.t('gnEmotionalRel') : 'Emotional Relationship'}</h4>
+        <div class="props-label">${window.t ? window.t('gnCurrentStyle') : 'Current Style'}
+          <div style="padding:8px 0;font-size:13px;color:var(--text-primary);font-weight:600">${labelText}</div>
         </div>
         <button class="btn btn-sm btn-primary" id="geno-btn-change-style" style="width:100%">
-          ✏️ Change Style Visually
+          ✏️ ${window.t ? window.t('gnChangeStyle') : 'Change Style Visually'}
         </button>
         <button class="btn btn-sm btn-danger" id="geno-btn-delete-node" style="margin-top:12px;width:100%">
-          🗑 Delete Emotional Link
+          🗑 ${window.t ? window.t('gnDeleteEmoLk') : 'Delete Emotional Link'}
         </button>`;
     }
 
@@ -784,47 +788,50 @@ export class GenogramMaker {
   /* ── Build HTML ─────────────────────────────────────────────── */
   _buildHTML() {
     // Couple relationship buttons with SVG previews
-    const coupleRows = Object.entries(COUPLE_STYLES).map(([key, s]) =>
-      `<button class="rel-btn rel-btn--preview" data-rel="${key}" data-cat="couple">
+    const coupleRows = Object.entries(COUPLE_STYLES).map(([key, s]) => {
+      const labelText = window.t ? window.t(s.label) : s.label;
+      return `<button class="rel-btn rel-btn--preview" data-rel="${key}" data-cat="couple">
         <span class="rel-preview">${generateCouplePreview(key)}</span>
-        <span class="rel-label">${s.label}</span>
-      </button>`
-    ).join('');
+        <span class="rel-label">${labelText}</span>
+      </button>`;
+    }).join('');
 
     // Emotional relationship buttons with SVG previews
-    const emoRows = Object.entries(EMOTIONAL_STYLES).map(([key, s]) =>
-      `<button class="rel-btn rel-btn--preview rel-btn--emo" data-rel="${key}" data-cat="emotional">
+    const emoRows = Object.entries(EMOTIONAL_STYLES).map(([key, s]) => {
+      const labelText = window.t ? window.t(s.label) : s.label;
+      return `<button class="rel-btn rel-btn--preview rel-btn--emo" data-rel="${key}" data-cat="emotional">
         <span class="rel-preview">${generateEmotionalPreview(key)}</span>
-        <span class="rel-label">${s.label}</span>
-      </button>`
-    ).join('');
+        <span class="rel-label">${labelText}</span>
+      </button>`;
+    }).join('');
 
     // Child type buttons with SVG previews
-    const childRows = Object.entries(CHILD_STYLES).map(([key, s]) =>
-      `<button class="rel-btn rel-btn--preview rel-btn--child" data-child="${key}">
+    const childRows = Object.entries(CHILD_STYLES).map(([key, s]) => {
+      const labelText = window.t ? window.t(s.label) : s.label;
+      return `<button class="rel-btn rel-btn--preview rel-btn--child" data-child="${key}">
         <span class="rel-preview">${generateChildPreview(key)}</span>
-        <span class="rel-label">${s.label}</span>
-      </button>`
-    ).join('');
+        <span class="rel-label">${labelText}</span>
+      </button>`;
+    }).join('');
 
     return `
 <div class="geno-wrapper" id="geno-wrapper-${this.containerId}">
   <!-- Toolbar -->
   <div class="geno-toolbar">
     <div class="geno-toolbar-left">
-      <button class="geno-tool geno-btn-undo"    title="Undo (Ctrl+Z)">↩ Undo</button>
-      <button class="geno-tool geno-btn-redo"    title="Redo (Ctrl+Y)">↪ Redo</button>
+      <button class="geno-tool geno-btn-undo"    title="Undo (Ctrl+Z)"><span data-i18n="gnUndo">↩ Undo</span></button>
+      <button class="geno-tool geno-btn-redo"    title="Redo (Ctrl+Y)"><span data-i18n="gnRedo">↪ Redo</span></button>
       <span class="geno-divider"></span>
-      <button class="geno-tool geno-btn-delete"  title="Delete Selected (Del)">🗑 Delete</button>
+      <button class="geno-tool geno-btn-delete"  title="Delete Selected (Del)"><span data-i18n="gnDelete">🗑 Delete</span></button>
     </div>
     <div class="geno-toolbar-right">
       <button class="geno-tool geno-btn-zoomout" title="Zoom Out">−</button>
       <button class="geno-tool geno-btn-zoomin"  title="Zoom In">+</button>
-      <button class="geno-tool geno-btn-zoomfit" title="Fit View">⊡ Fit</button>
+      <button class="geno-tool geno-btn-zoomfit" title="Fit View"><span data-i18n="gnFit">⊡ Fit</span></button>
       <span class="geno-divider"></span>
-      <button class="geno-tool geno-tool--save geno-btn-save"    title="Save to Patient">💾 Save to Patient</button>
-      <button class="geno-tool geno-tool--load geno-btn-load"    title="Load Genogram">📂 Load</button>
-      <button class="geno-tool geno-tool--export geno-btn-export"  title="Export PNG">⬇ Export</button>
+      <button class="geno-tool geno-tool--save geno-btn-save"    title="Save to Patient">💾 <span data-i18n="gnSaveToPatient">Save to Patient</span></button>
+      <button class="geno-tool geno-tool--load geno-btn-load"    title="Load Genogram">📂 <span data-i18n="gnLoad">Load</span></button>
+      <button class="geno-tool geno-tool--export geno-btn-export"  title="Export PNG">⬇ <span data-i18n="gnExport">Export PNG</span></button>
     </div>
   </div>
 
@@ -832,18 +839,18 @@ export class GenogramMaker {
   <div class="geno-main">
     <!-- Left symbol panel -->
     <div class="geno-symbols">
-      <div class="symbol-section-label">Symbols</div>
+      <div class="symbol-section-label" data-i18n="gnSymbols">Symbols</div>
       <div class="symbol-item" data-gender="male" title="Drag to add Male">
         <svg width="32" height="32" viewBox="0 0 32 32">
           <rect x="4" y="4" width="24" height="24" rx="2" fill="none" stroke="#2563eb" stroke-width="2.5"/>
         </svg>
-        <span>Male</span>
+        <span data-i18n="gnMale">Male</span>
       </div>
       <div class="symbol-item" data-gender="female" title="Drag to add Female">
         <svg width="32" height="32" viewBox="0 0 32 32">
           <circle cx="16" cy="16" r="12" fill="none" stroke="#db2777" stroke-width="2.5"/>
         </svg>
-        <span>Female</span>
+        <span data-i18n="gnFemale">Female</span>
       </div>
     </div>
 
@@ -869,16 +876,16 @@ export class GenogramMaker {
 <div id="geno-rel-modal-${this.containerId}" class="geno-modal hidden">
   <div class="geno-modal-box">
     <div class="geno-modal-header">
-      <h3>Select Relationship Type</h3>
+      <h3 data-i18n="gnSelectRelType">Select Relationship Type</h3>
       <button class="geno-modal-close">✕</button>
     </div>
     <div class="geno-modal-tabs">
       <div class="geno-modal-section">
-        <p class="modal-cat-label">Family / Partner</p>
+        <p class="modal-cat-label" data-i18n="gnFamilyPartner">Family / Partner</p>
         <div class="rel-grid">${coupleRows}</div>
       </div>
       <div class="geno-modal-section">
-        <p class="modal-cat-label">Emotional</p>
+        <p class="modal-cat-label" data-i18n="gnEmotionalGrp">Emotional</p>
         <div class="rel-grid">${emoRows}</div>
       </div>
     </div>
@@ -889,12 +896,12 @@ export class GenogramMaker {
 <div id="geno-child-modal-${this.containerId}" class="geno-modal hidden">
   <div class="geno-modal-box">
     <div class="geno-modal-header">
-      <h3>Select Child Relationship</h3>
+      <h3 data-i18n="gnSelectChildRel">Select Child Relationship</h3>
       <button class="geno-modal-close">✕</button>
     </div>
     <div class="geno-modal-tabs">
       <div class="geno-modal-section">
-        <p class="modal-cat-label">Child Type</p>
+        <p class="modal-cat-label" data-i18n="gnChildType">Child Type</p>
         <div class="rel-grid">${childRows}</div>
       </div>
     </div>
@@ -905,15 +912,15 @@ export class GenogramMaker {
 <div id="geno-save-modal-${this.containerId}" class="geno-modal hidden">
   <div class="geno-modal-box" style="width: 400px;">
     <div class="geno-modal-header">
-      <h3>Save to Patient Profile</h3>
+      <h3 data-i18n="gnSaveProfile">Save to Patient Profile</h3>
       <button class="geno-modal-close">✕</button>
     </div>
     <div class="geno-modal-section" style="padding: 16px;">
-      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Select a patient to attach this genogram to their profile.</p>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;" data-i18n="gnSaveDesc">Select a patient to attach this genogram to their profile.</p>
       <select id="geno-patient-select-${this.containerId}" class="props-input" style="width: 100%; margin-bottom: 16px; padding: 8px;">
-        <option value="">Loading patients...</option>
+        <option value="">${window.t ? window.t('gnLoadingPatients') : 'Loading patients...'}</option>
       </select>
-      <button id="geno-btn-confirm-save-${this.containerId}" class="btn btn-primary" style="width: 100%;">Save Genogram</button>
+      <button id="geno-btn-confirm-save-${this.containerId}" class="btn btn-primary" style="width: 100%;" data-i18n="gnSaveProfile">Save Genogram</button>
     </div>
   </div>
 </div>
@@ -922,15 +929,15 @@ export class GenogramMaker {
 <div id="geno-load-modal-${this.containerId}" class="geno-modal hidden">
   <div class="geno-modal-box" style="width: 400px;">
     <div class="geno-modal-header">
-      <h3>Load Patient Genogram</h3>
+      <h3 data-i18n="gnLoadProfile">Load Patient Genogram</h3>
       <button class="geno-modal-close">✕</button>
     </div>
     <div class="geno-modal-section" style="padding: 16px;">
-      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Select a patient to load their genogram into the editor.</p>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;" data-i18n="gnLoadDesc">Select a patient to load their genogram into the editor.</p>
       <select id="geno-patient-load-select-${this.containerId}" class="props-input" style="width: 100%; margin-bottom: 16px; padding: 8px;">
-        <option value="">Loading patients...</option>
+        <option value="">${window.t ? window.t('gnLoadingPatients') : 'Loading patients...'}</option>
       </select>
-      <button id="geno-btn-confirm-load-${this.containerId}" class="btn btn-success" style="width: 100%;">Load Genogram</button>
+      <button id="geno-btn-confirm-load-${this.containerId}" class="btn btn-success" style="width: 100%;" data-i18n="gnLoadProfile">Load Genogram</button>
     </div>
   </div>
 </div>`;
@@ -1017,15 +1024,15 @@ export class GenogramMaker {
         const select = root.querySelector(`[id^="geno-patient-select-"]`);
         const patientId = select ? select.value : '';
         if (!patientId) {
-          alert('Please select a patient first.');
+          alert(window.t ? window.t('gnPatientReq') : 'Please select a patient first.');
           return;
         }
         try {
           await maker._saveToBackend(patientId);
           saveModal.classList.add('hidden');
-          alert('Genogram successfully saved and mapped to patient!');
+          alert(window.t ? window.t('gnSaveSuccess') : 'Genogram successfully saved and mapped to patient!');
         } catch (err) {
-          alert('Error saving genogram: ' + err.message);
+          alert((window.t ? window.t('gnErrSave') : 'Error saving genogram: ') + err.message);
         }
       });
     }
@@ -1038,7 +1045,7 @@ export class GenogramMaker {
         const select = root.querySelector(`[id^="geno-patient-load-select-"]`);
         const patientId = select ? select.value : '';
         if (!patientId) {
-          alert('Please select a patient first.');
+          alert(window.t ? window.t('gnPatientReq') : 'Please select a patient first.');
           return;
         }
         try {
@@ -1050,9 +1057,9 @@ export class GenogramMaker {
             patient_id: patientId
           });
           loadModal.classList.add('hidden');
-          alert('Genogram successfully loaded!');
+          alert(window.t ? window.t('gnLoadSuccess') : 'Genogram successfully loaded!');
         } catch (err) {
-          alert('Error loading genogram: ' + err.message);
+          alert((window.t ? window.t('gnErrLoad') : 'Error loading genogram: ') + err.message);
         }
       });
     }

@@ -34,7 +34,7 @@
     "appId": "com.psyflow.manager",
     "productName": "PsyFlow",
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "icon": "public/icon.png"
     },
     "directories": {

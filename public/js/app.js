@@ -9,10 +9,10 @@ let searchTimeout = null;
 let patientCache = {};
 
 const PAGE_CONFIG = {
-  dashboard: { title: 'Dashboard',       subtitle: "Overview of your clinic's patient records" },
-  reading:   { title: 'Read Card',        subtitle: "Scan a patient's RFID card to view their profile" },
-  manage:    { title: 'Manage Patients',  subtitle: 'Search, edit, and manage all patient records' },
-  genogram:  { title: 'Genogram',         subtitle: 'Create and manage clinical family genograms' },
+  dashboard: { title: t('dashboardTitle'),       subtitle: t('dashboardSubtitle') },
+  reading:   { title: t('readCardTitle'),        subtitle: t('readCardSubtitle') },
+  manage:    { title: t('managePatientsTitle'),  subtitle: t('managePatientsSubtitle') },
+  genogram:  { title: t('genogramTitle'),        subtitle: t('genogramSubtitle') },
 };
 
 /* --- THEME SYSTEM --- */
@@ -127,6 +127,7 @@ function initGenogramWorkspace() {
     if (window._initGenogramMaker) {
       _genoMakerInstance = window._initGenogramMaker('genogram-maker-root');
       window._genoMakerInstance = _genoMakerInstance;
+      if (window.applyTranslations) window.applyTranslations();
     } else {
       setTimeout(tryInit, 100);
     }
@@ -538,16 +539,16 @@ function renderPatientProfile(p, visits = [], totalVisits = 0, documents = []) {
         <div class="visit-section-header" style="padding: 24px;">
           <h3 class="visit-section-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            Genogram
+            <span data-i18n="gnMenuTitle">${t('gnMenuTitle')}</span>
           </h3>
           <button class="btn btn-primary btn-sm" data-action="open-genogram" data-patient-id="${p.id}" style="box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Edit Genogram
+            <span data-i18n="gnEditGenogram">${t('gnEditGenogram')}</span>
           </button>
         </div>
         <div style="position:relative; width: 100%; height: 65vh; min-height: 500px; background: var(--bg-surface); border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default);">
-          <div id="patient-genogram-preview" class="genogram-preview-area" style="width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; color: var(--text-secondary); overflow:hidden;">
-            Click 'Edit Genogram' to open the Genogram Maker.
+          <div id="patient-genogram-preview" class="genogram-preview-area" style="width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; color: var(--text-secondary); overflow:hidden;" data-i18n="gnEmptyPreview">
+            ${t('gnEmptyPreview')}
           </div>
         </div>
       </div>
