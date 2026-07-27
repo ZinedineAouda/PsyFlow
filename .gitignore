@@ -6,3 +6,9 @@ dist/
 .local/
 psyflow_db.json
 uploads/
+build/
+.dart_tool/
+.pub-cache/
+__pycache__/
+venv/
+.venv/
